@@ -18,7 +18,7 @@ The public runtime resolves validated theme, page, template, component, record, 
 
 The percentage rail supports document geometry updates, pointer seeking and keyboard navigation. Section links preserve browser history and explicit focus. Mobile navigation supports Escape and focus return. Appearance preferences persist between pages; System follows the OS. Reduced-motion preferences disable authored animation. Design values do not execute arbitrary scripts, HTML or CSS.
 
-The runtime inventory describes mapped public properties. It is not evidence that the custom owner editor exists. Extension-only `advanced.unmapped` data is not executed. The owner editor, its complete import/export/undo workflow and broader customization validation belong to later phases.
+The runtime inventory describes mapped public properties. The visual owner editor and its import/export/undo workflow are documented in [Owner workspace](OWNER-WORKSPACE.md) and `src/owner-design/HANDBACK.md`, with a property-to-control traceability map. Extension-only `advanced.unmapped` data is not executed. Broader application-wide customization validation remains Phase 7.
 
 ## Local synthetic evaluation
 

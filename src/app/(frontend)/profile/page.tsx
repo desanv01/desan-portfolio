@@ -1,3 +1,4 @@
+import { routeMetadata } from '@/public-data/discovery';
 import Link from 'next/link';
 import { getPublicSite } from '@/public-data/server';
 import {
@@ -28,7 +29,6 @@ import {
   BoundSkillCard,
 } from '@/components/public/bound-professional';
 import { BoundFilterBar } from '@/components/public/bound-form';
-export const metadata = { title: 'Profile' };
 export default async function Profile({
   searchParams,
 }: {
@@ -207,4 +207,8 @@ export default async function Profile({
       }}
     />
   );
+}
+
+export async function generateMetadata() {
+  return routeMetadata(await getPublicSite(), '/profile');
 }

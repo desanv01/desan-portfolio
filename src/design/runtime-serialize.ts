@@ -243,6 +243,7 @@ export function resourceResolver(
   design: DesignDocument,
   resources: readonly PublishedResource[],
   warnings: string[],
+  ownerPreview = false,
 ) {
   const manifest = new Map(
     [...design.assets, ...design.fonts].map((x) => [x.id, x]),
@@ -267,7 +268,11 @@ export function resourceResolver(
       resource.sha256 !== ref.sha256 ||
       !ref.rights.redistributable ||
       font !== fontIds.has(id) ||
-      resource.url !== `/api/public/media/${encodeURIComponent(id)}` ||
+      (resource.url !== `/api/public/media/${encodeURIComponent(id)}` &&
+        !(
+          ownerPreview &&
+          resource.url === `/api/owner/media/${encodeURIComponent(id)}`
+        )) ||
       (font && resource.mimeType !== 'font/woff2')
     ) {
       warn(

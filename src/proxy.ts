@@ -54,6 +54,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api(?:/|$)|admin(?:/|$)|_next(?:/|$)|fonts(?:/|$)|images(?:/|$)|icons(?:/|$)|robots\\.txt$|favicon\\.ico$|sitemap\\.xml$|manifest\\.webmanifest$).*)',
+    '/((?!api(?:/|$)|admin(?:/|$)|owner(?:/|$)|_next(?:/|$)|fonts(?:/|$)|images(?:/|$)|icons(?:/|$)|robots\\.txt$|favicon\\.ico$|sitemap\\.xml$|manifest\\.webmanifest$).*)',
   ],
 };

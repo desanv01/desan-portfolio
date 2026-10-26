@@ -1,3 +1,4 @@
+import { routeMetadata } from '@/public-data/discovery';
 import { getPublicSite } from '@/public-data/server';
 import { list, records, safeHref, text } from '@/public-data';
 import { PublicPage } from '@/components/public/public-page';
@@ -7,7 +8,6 @@ import {
   PageIntro,
   PublicationNotice,
 } from '@/components/public/primitives';
-export const metadata = { title: 'Contact' };
 export default async function Contact() {
   const site = await getPublicSite();
   const profile = records(site, 'profile')[0];
@@ -104,4 +104,8 @@ export default async function Contact() {
       }}
     />
   );
+}
+
+export async function generateMetadata() {
+  return routeMetadata(await getPublicSite(), '/contact');
 }

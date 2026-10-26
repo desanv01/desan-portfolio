@@ -10,7 +10,10 @@ import {
   SearchForm,
 } from '@/components/public/primitives';
 import { queryValue, type Query } from '@/components/public/library';
-export const metadata = { title: 'Search' };
+export const metadata = {
+  title: 'Search',
+  robots: { index: false, follow: false },
+};
 export default async function Search({
   searchParams,
 }: {

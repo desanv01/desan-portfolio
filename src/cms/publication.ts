@@ -7,6 +7,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { assertValidDesign } from '../design/model';
 import { requireOwner } from './access';
+import { lock } from '../owner/transaction';
 
 export type Selection = { collection: string; versionId: number };
 export type PublicationInput = {
@@ -367,9 +368,12 @@ export async function publish(
   input: PublicationInput,
 ): Promise<Publication> {
   requireOwner(userReq);
-  const transactionID = await payload.db.beginTransaction({
-    isolationLevel: 'serializable',
-  });
+  const outerTransaction = await userReq.transactionID;
+  const transactionID =
+    outerTransaction ||
+    (await payload.db.beginTransaction({
+      isolationLevel: 'read committed',
+    }));
   if (!transactionID)
     throw new Error('Publication requires a database transaction');
   const req = await createLocalReq(
@@ -377,6 +381,7 @@ export async function publish(
     payload,
   );
   try {
+    await lock(payload, req, 'publication');
     const current = await currentPublication(payload, req);
     if ((current?.revision || null) !== input.expectedRevision)
       throw new Error('Publication conflict: refresh the active revision');
@@ -479,10 +484,10 @@ export async function publish(
         overrideAccess: true,
         req,
       });
-    await payload.db.commitTransaction(transactionID);
+    if (!outerTransaction) await payload.db.commitTransaction(transactionID);
     return publication;
   } catch (error) {
-    await payload.db.rollbackTransaction(transactionID);
+    if (!outerTransaction) await payload.db.rollbackTransaction(transactionID);
     throw error;
   }
 }

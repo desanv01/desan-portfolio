@@ -2,15 +2,16 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { cookies } from 'next/headers';
 import '@/components/public/public.css';
+import { siteOrigin, indexable } from '@/public-data/discovery';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.CMS_SERVER_URL || 'http://127.0.0.1:3000'),
+  metadataBase: new URL(siteOrigin()),
   title: {
     default: 'Desan Vasu — Engineering & ideas',
     template: '%s — Desan Vasu',
   },
   description: 'Work, ideas and the process behind them.',
-  robots: { index: false, follow: false },
+  robots: { index: indexable(), follow: indexable() },
 };
 
 export default async function RootLayout({

@@ -193,7 +193,11 @@ try {
   } else {
     verifier = spawn(
       process.execPath,
-      ['--test', 'tests/public-data-routing.test.mjs'],
+      [
+        '--test',
+        'tests/public-data-routing.test.mjs',
+        'tests/discovery-routing.test.mjs',
+      ],
       { cwd: workspace, env: environment, stdio: 'inherit' },
     );
     const [exitCode] = await once(verifier, 'exit');

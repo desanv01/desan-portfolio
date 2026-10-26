@@ -1,3 +1,7 @@
+import { GitHubMetadata } from '@/components/public/github-metadata';
+import { ShareLinks } from '@/components/public/share-links';
+import { siteOrigin, publicOrigin } from '@/public-data/discovery';
+import { routeMetadata } from '@/public-data/discovery';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -26,14 +30,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const project = recordBySlug(await getPublicSite(), 'projects', slug);
-  return project
-    ? {
-        title: project.title,
-        description: project.summary,
-        alternates: { canonical: `/work/${encodeURIComponent(slug)}` },
-      }
-    : { title: 'Page not found' };
+  return routeMetadata(await getPublicSite(), '/work/' + slug);
 }
 export default async function CaseStudy({
   params,
@@ -63,6 +60,7 @@ export default async function CaseStudy({
     <PublicPage
       site={site}
       pageId="case-study"
+      record={project}
       slots={{
         'case-study.hero': (
           <section
@@ -126,6 +124,11 @@ export default async function CaseStudy({
               </div>
             ) : null}
             <Relations site={site} collection="projects" record={project} />
+            <ShareLinks
+              url={siteOrigin() + '/work/' + project.slug}
+              publicURL={publicOrigin(siteOrigin())}
+            />
+            <GitHubMetadata project={project} />
             <div className="button-group">
               {list(project.links)
                 .filter((link) => safeHref(link.url))
