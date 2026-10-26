@@ -1,10 +1,10 @@
 # Contributing
 
-Current execution scope is Phase 2, the engineering foundation. Read the [acceptance criteria](docs/engineering/phase-2-acceptance.md) and [roadmap](docs/engineering/roadmap.md) before starting work. An issue or feature request does not authorize later-phase implementation.
+Current execution scope is Phase 3, the backend foundation. Read the [acceptance criteria](docs/engineering/phase-3-acceptance.md), [backend setup](docs/engineering/backend.md) and [roadmap](docs/engineering/roadmap.md) before starting work. An issue or feature request does not authorize later phases.
 
 ## Propose and scope work
 
-Use a bug report for reproducible defects, a feature request for a proposed improvement, or an engineering task for bounded delivery. Each accepted task needs an owner, dependency list, allowed paths, observable acceptance criteria and evidence location. Use `P2.1` through `P2.4` in Phase 2 task titles. Link scoped tasks to their phase parent issue.
+Use a bug report for reproducible defects, a feature request for a proposed improvement, or an engineering task for bounded delivery. Each accepted task needs an owner, dependency list, allowed paths, observable acceptance criteria and evidence location. Use `P3.1` through `P3.5` for Phase 3 tasks and link them to the phase parent issue.
 
 The maintainer coordinates shared files and integration. Check [ownership](docs/engineering/ownership.md) before editing shared configuration, dependency files or workflows. Do not run competing installs, checkout operations or migrations in a shared checkout.
 
@@ -17,8 +17,11 @@ npm run format:check
 npm run lint
 npm run typecheck
 npm run test
+npm run db:migrate
+npm run test:backend
 npm run build
 npm run test:smoke
+npm run test:backend-routing
 node scripts/package-preview.mjs
 npm run test:preview
 ```

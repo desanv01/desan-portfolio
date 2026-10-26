@@ -1,6 +1,6 @@
 # Roadmap and authorization boundary
 
-Phase 2, the repository and engineering foundation, is the current authorized implementation scope. The table below is planning only. A roadmap entry, dependency installation or approved design does not authorize starting a later phase.
+Phase 2 is complete. Phase 3 backend/content work is authorized. Phase 4 and later remain planning only. A roadmap entry, dependency installation or approved design does not authorize starting a later phase.
 
 | Phase                    | Planned outcome                                                                                              | Key acceptance boundary                                                              |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
@@ -11,4 +11,4 @@ Phase 2, the repository and engineering foundation, is the current authorized im
 | 7 — Validation           | End-to-end, security, responsive/accessibility/performance and customization testing                         | Independent evidence and regression closure across visitor/owner flows               |
 | 8 — Launch/handover      | Production config, backup/restore, domain/release checks and owner guide                                     | Explicit deployment authorization, verified operating costs and release acceptance   |
 
-Production deployment, paid services, personal-content publication and unresolved license decisions remain separate gates. Phase 2 completion stops at the foundation; it does not silently advance this roadmap.
+Production deployment, paid services, personal-content publication and unresolved license decisions remain separate gates. Phase 3 completion stops at the backend foundation; it does not silently advance this roadmap.

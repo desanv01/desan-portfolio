@@ -1,5 +1,7 @@
 # Phase 2 acceptance
 
+Historical Phase 2 gate: completed in PR #6. The later direct Phase 3 authorization is recorded in [Phase 3 acceptance](phase-3-acceptance.md); the original stop boundary below describes Phase 2's scope at its completion.
+
 Phase 2 is authorized for the repository and engineering foundation. These are acceptance requirements, not a declaration that all checks have passed. Completion is recorded through the linked GitHub issues, PR review and actual CI evidence.
 
 | Task | Deliverable                                                       | Required evidence                                                                                                                      |

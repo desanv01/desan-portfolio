@@ -1,7 +1,17 @@
 import type { NextConfig } from 'next';
+import { withPayload } from '@payloadcms/next/withPayload';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  outputFileTracingExcludes: {
+    '*': [
+      './tmp/**/*',
+      './docs/**/*',
+      './assets/**/*',
+      './output/**/*',
+      './.env*',
+    ],
+  },
   poweredByHeader: false,
   async headers() {
     return [
@@ -13,4 +23,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);

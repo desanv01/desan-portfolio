@@ -17,9 +17,27 @@ jobs:
   quality:
     name: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-bookworm@sha256:858bb5e98eed02eb8cafbcdc007f9a65d1b613972028944a8ec2133ccaf80d27
+        env:
+          POSTGRES_USER: desan
+          POSTGRES_PASSWORD: desan_ephemeral_ci_only
+          POSTGRES_DB: desan_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U desan -d desan_dev"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
     env:
       NEXT_TELEMETRY_DISABLED: '1'
+      DATABASE_URI: postgresql://desan:desan_ephemeral_ci_only@127.0.0.1:5432/desan_dev
+      TEST_DATABASE_URI: postgresql://desan:desan_ephemeral_ci_only@127.0.0.1:5432/desan_test
+      PAYLOAD_SECRET: desan-ephemeral-ci-only-secret-never-production-2026
+      LOCAL_RECOVERY_SPOOL: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -42,10 +60,20 @@ jobs:
         run: npm run typecheck
       - name: Unit tests
         run: npm test
+      - name: Create isolated backend test database
+        run: docker exec ${{ job.services.postgres.id }} createdb -U desan desan_test
+      - name: Apply and reapply migrations
+        run: |
+          npm run db:migrate
+          npm run db:migrate
+      - name: Backend integration tests
+        run: npm run test:backend
       - name: Production build
         run: npm run build
       - name: Production HTTP smoke
         run: npm run test:smoke
+      - name: Built Next backend route smoke
+        run: npm run test:backend-routing
       - name: Package standalone preview
         run: node scripts/package-preview.mjs
       - name: Verify standalone preview
@@ -54,7 +82,7 @@ jobs:
         id: preview
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: phase2-preview-${{ github.sha }}
+          name: phase3-preview-${{ github.sha }}
           path: tmp/phase2-preview/
           include-hidden-files: true
           if-no-files-found: error
@@ -63,6 +91,6 @@ jobs:
         env:
           PREVIEW_URL: ${{ steps.preview.outputs.artifact-url }}
         run: |
-          echo "### Phase 2 preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Phase 3 backend preview" >> "$GITHUB_STEP_SUMMARY"
           echo "[Download the standalone preview]($PREVIEW_URL)" >> "$GITHUB_STEP_SUMMARY"
-          echo "Run with the pinned Node version using the included README. This is a downloadable engineering preview, not a hosted production deployment." >> "$GITHUB_STEP_SUMMARY"
+          echo "Run with the pinned Node version and your own private database/runtime configuration using the included README. This is a downloadable engineering preview, not a hosted production deployment. No database content, credentials or private media are included." >> "$GITHUB_STEP_SUMMARY"

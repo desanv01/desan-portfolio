@@ -6,7 +6,7 @@ body:
     id: phase
     attributes:
       label: Phase ID and parent issue
-      placeholder: 'P2.1; parent #...'
+      placeholder: 'P3.1; parent #...'
     validations:
       required: true
   - type: textarea

@@ -12,4 +12,4 @@ For a report through a private channel, include the affected revision, environme
 
 ## Current boundaries
 
-Phase 2 validates the application foundation. Future owner authentication, authorization, draft isolation, uploads and publishing require dedicated implementation and verification. A dependency scan or successful build alone does not establish those controls.
+Phase 3 adds owner authentication, authorization, draft isolation, guarded uploads and selected-version publishing. Acceptance requires dedicated database/API tests and independent review on the actual revision. Local recovery capture and media storage are evaluation facilities, not production services. Unsupported upload formats are rejected. A dependency scan or successful build alone does not establish these controls.

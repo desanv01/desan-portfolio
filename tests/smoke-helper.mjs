@@ -30,6 +30,7 @@ export async function verifyFoundation(t, preview = false) {
         NEXT_TELEMETRY_DISABLED: '1',
         HOSTNAME: '127.0.0.1',
         PORT: String(port),
+        CMS_SERVER_URL: `http://127.0.0.1:${port}`,
       },
     },
   );
@@ -88,4 +89,5 @@ export async function verifyFoundation(t, preview = false) {
   assert.equal(robots.status, 200);
   assert.match(await robots.text(), /Disallow: \//);
   assert.equal((await fetch(`${base}/missing-foundation-route`)).status, 404);
+  return base;
 }
