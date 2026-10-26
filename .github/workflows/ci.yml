@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Pin npm
+        run: npm install --global npm@11.19.1
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Formatting
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: Types
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Production HTTP smoke
+        run: npm run test:smoke
+      - name: Package standalone preview
+        run: node scripts/package-preview.mjs
+      - name: Verify standalone preview
+        run: npm run test:preview
+      - name: Upload downloadable preview
+        id: preview
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phase2-preview-${{ github.sha }}
+          path: tmp/phase2-preview/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+      - name: Link preview artifact
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.artifact-url }}
+        run: |
+          echo "### Phase 2 preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download the standalone preview]($PREVIEW_URL)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Run with the pinned Node version using the included README. This is a downloadable engineering preview, not a hosted production deployment." >> "$GITHUB_STEP_SUMMARY"

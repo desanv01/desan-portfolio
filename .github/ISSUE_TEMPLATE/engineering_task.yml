@@ -1,0 +1,34 @@
+name: Engineering task
+description: Define bounded work with ownership and acceptance evidence.
+title: '[Task] '
+body:
+  - type: input
+    id: phase
+    attributes:
+      label: Phase ID and parent issue
+      placeholder: 'P2.1; parent #...'
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Problem and deliverable
+    validations:
+      required: true
+  - type: textarea
+    id: ownership
+    attributes:
+      label: Owner, allowed paths and dependencies
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria and evidence plan
+      description: Include meaningful checks and the revision/environment to record at handback.
+    validations:
+      required: true
+  - type: textarea
+    id: exclusions
+    attributes:
+      label: Exclusions and authorization boundary
