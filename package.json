@@ -16,7 +16,7 @@
     "format:check": "prettier --check package.json package-lock.json tsconfig.json next.config.ts eslint.config.mjs .prettierrc.json src tests scripts",
     "lint": "eslint src tests scripts next.config.ts --max-warnings 0",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "node --import tsx --test tests/health.test.mjs tests/design*.mjs tests/preview-safety.test.mjs",
+    "test": "node --import tsx --test tests/health.test.mjs tests/design*.mjs tests/public-data.test.mjs tests/public-data-proxy.test.mjs tests/public-rendering.test.mjs tests/preview-safety.test.mjs",
     "test:smoke": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --test tests/smoke.test.mjs",
     "test:preview": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --test tests/preview.test.mjs",
     "db:migrate": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --import tsx scripts/backend-cli.ts migrate",
@@ -24,7 +24,10 @@
     "db:seed": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --import tsx scripts/backend-cli.ts seed",
     "owner:bootstrap": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --import tsx scripts/backend-cli.ts bootstrap --bootstrap",
     "test:backend": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --import tsx --test --test-force-exit --test-concurrency=1 tests/backend.test.ts",
-    "test:backend-routing": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --test tests/backend-routing.test.mjs"
+    "test:backend-routing": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --test tests/backend-routing.test.mjs",
+    "fixture:public": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --import tsx scripts/phase4-fixtures.ts --publish-synthetic --bootstrap-fixture-owner",
+    "test:public": "node scripts/verify-public-preview.mjs",
+    "test:public-preview": "node scripts/verify-public-preview.mjs --packaged"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.92.0",

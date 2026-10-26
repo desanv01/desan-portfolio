@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": [
+    "../src/components/public/design-frame.tsx",
+    "../src/components/public/generic-controls.tsx",
+    "../src/components/public/design-effects.tsx",
+    "../src/components/public/bound-elements.tsx",
+    "../src/components/public/site-chrome.tsx",
+    "../src/components/public/primitives.tsx"
+  ],
+  "exclude": ["../node_modules"]
+}

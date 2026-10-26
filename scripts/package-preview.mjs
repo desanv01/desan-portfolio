@@ -120,6 +120,6 @@ for (const path of packagedPaths) {
 }
 await writeFile(
   resolve(destination, 'PREVIEW-README.txt'),
-  'Phase 3 backend engineering preview.\nUse Node 24.22.1. CI artifacts target Linux.\nSupply your own DATABASE_URI and PAYLOAD_SECRET (32+ characters), matching migrated schema and private media directory. See repository docs/engineering/backend.md for setup/migrations/bootstrap.\nNo credentials, database rows, recovery mail or uploaded media are included.\nLinux: HOSTNAME=127.0.0.1 node server.js\nPowerShell (locally built artifact): $env:HOSTNAME="127.0.0.1"; node server.js\nOpen http://localhost:3000 and /api/health.\nThe public product frontend and custom owner workspace remain later phases.\n',
+  'Phase 4 public site engineering preview.\nUse Node 24.22.1. CI artifacts target Linux.\nSupply your own DATABASE_URI and PAYLOAD_SECRET (32+ characters), matching migrated schema and private media directory. See repository docs/engineering/backend.md for setup/migrations/bootstrap.\nNo credentials, database rows, recovery mail or uploaded media are included.\nLinux: HOSTNAME=127.0.0.1 node server.js\nPowerShell (locally built artifact): $env:HOSTNAME="127.0.0.1"; node server.js\nOpen http://localhost:3000 and /api/health.\nThe public frontend renders selected publication snapshots. See docs/engineering/public-site.md for isolated synthetic evaluation; the custom owner workspace remains a later phase.\n',
 );
 console.log('Standalone preview packaged in tmp/phase2-preview');
