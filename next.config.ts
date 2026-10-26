@@ -3,6 +3,10 @@ import { withPayload } from '@payloadcms/next/withPayload';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  // Native image libraries are loaded by the OS, outside JavaScript tracing.
+  outputFileTracingIncludes: {
+    '*': ['./node_modules/@img/sharp-*/lib/**/*'],
+  },
   outputFileTracingExcludes: {
     '*': [
       './tmp/**/*',

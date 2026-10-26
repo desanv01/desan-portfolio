@@ -68,21 +68,29 @@ jobs:
           npm run db:migrate
       - name: Backend integration tests
         run: npm run test:backend
+      - name: Publish isolated synthetic public fixture
+        env:
+          ALLOW_SYNTHETIC_PUBLICATION: '1'
+        run: npm run fixture:public
       - name: Production build
         run: npm run build
       - name: Production HTTP smoke
         run: npm run test:smoke
       - name: Built Next backend route smoke
         run: npm run test:backend-routing
+      - name: Published public route and media verification
+        run: npm run test:public
       - name: Package standalone preview
         run: node scripts/package-preview.mjs
       - name: Verify standalone preview
         run: npm run test:preview
+      - name: Verify standalone public routes
+        run: npm run test:public-preview
       - name: Upload downloadable preview
         id: preview
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: phase3-preview-${{ github.sha }}
+          name: phase4-preview-${{ github.sha }}
           path: tmp/phase2-preview/
           include-hidden-files: true
           if-no-files-found: error
@@ -91,6 +99,6 @@ jobs:
         env:
           PREVIEW_URL: ${{ steps.preview.outputs.artifact-url }}
         run: |
-          echo "### Phase 3 backend preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Phase 4 public site preview" >> "$GITHUB_STEP_SUMMARY"
           echo "[Download the standalone preview]($PREVIEW_URL)" >> "$GITHUB_STEP_SUMMARY"
           echo "Run with the pinned Node version and your own private database/runtime configuration using the included README. This is a downloadable engineering preview, not a hosted production deployment. No database content, credentials or private media are included." >> "$GITHUB_STEP_SUMMARY"

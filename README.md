@@ -2,7 +2,7 @@
 
 # Desan Portfolio
 
-**Backend foundation for an editable portfolio and publishing workspace**
+**A configurable portfolio and publishing workspace**
 
 [![CI](https://github.com/desanv01/desan-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/desanv01/desan-portfolio/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@
 
 </div>
 
-This repository contains the Phase 2 engineering foundation and Phase 3 backend work using Next.js, Payload and PostgreSQL. The public homepage remains an engineering placeholder. The approved portfolio frontend and custom owner Design Studio belong to later phases.
+This repository contains the engineering foundation, backend and public portfolio built with Next.js, Payload and PostgreSQL. Public pages render selected content and design revisions together. The custom owner Design Studio remains a later phase.
 
 ## Current scope
 
@@ -22,10 +22,10 @@ This repository contains the Phase 2 engineering foundation and Phase 3 backend 
 | Publication | Selected content/design revisions and assets in a coherent public snapshot                            |
 | Design data | Versioned arbitrary themes, typography, geometry, layouts, responsive/state and motion values         |
 | Validation  | Pinned toolchain, migration/integration tests, lint/types/build and preview verification              |
-| Product UI  | Placeholder and configured Payload administration; finished public/custom owner screens remain later  |
+| Product UI  | Responsive Home, Work/case studies, Profile, Journal/articles, Contact, Resume, Search and errors; configured Payload administration |
 | Deployment  | No production deployment or live site URL                                                             |
 
-Acceptance belongs to an exact source revision and its observed checks. See the [Phase 3 acceptance contract](docs/engineering/phase-3-acceptance.md); dependency installation alone does not establish working workflows.
+Acceptance belongs to an exact source revision and its observed checks. See the [backend acceptance contract](docs/engineering/phase-3-acceptance.md) and [public renderer contract](docs/engineering/public-site.md).
 
 ## Local development
 
@@ -46,31 +46,37 @@ npm run typecheck
 npm test
 npm run db:migrate
 npm run test:backend
+# Optional isolated evaluation data: set ALLOW_SYNTHETIC_PUBLICATION=1 first.
+npm run fixture:public
 npm run build
 npm run test:smoke
 npm run test:backend-routing
+npm run test:public
 node scripts/package-preview.mjs
 npm run test:preview
+npm run test:public-preview
 ```
 
 CI uses isolated PostgreSQL, synthetic credentials and required job `quality`. It applies migrations twice, runs integration checks and verifies the standalone package before uploading it. The package guard rejects environment/runtime files and configured secret values.
 
-Successful runs link a Linux preview artifact with seven-day retention. It requires your own matching migrated database, private runtime configuration and media storage; database rows, credentials and uploads are excluded. It is not a hosted deployment. The internal `tmp/phase2-preview` folder name is retained from foundation packaging; current artifacts are named for Phase 3.
+Successful runs link a Linux preview artifact with seven-day retention. It requires your own matching migrated database, private runtime configuration and media storage; database rows, credentials and uploads are excluded. It is not a hosted deployment. The internal `tmp/phase2-preview` folder name is retained from foundation packaging; current artifacts are named for Phase 4.
 
 ## Project layout
 
 | Path                | Purpose                                                        |
 | ------------------- | -------------------------------------------------------------- |
-| `src/app/`          | Placeholder, Payload routes and guarded publication/media APIs |
+| `src/app/`          | Public pages, Payload routes and guarded publication/media APIs |
 | `src/cms/`          | Content/access/media/publication configuration and migrations  |
-| `src/design/`       | Validated design schema and inheritance contracts              |
+| `src/design/`       | Validated design schema, inheritance and CSS/runtime compilation |
+| `src/public-data/`  | Published snapshot projection, search and typed relationship helpers |
+| `src/components/public/` | Public templates, configurable components and accessible interactions |
 | `tests/`            | Unit, integration, HTTP and package-safety checks              |
 | `scripts/`          | Backend CLI and preview packaging                              |
 | `compose.yaml`      | Isolated loopback PostgreSQL service                           |
 | `.github/`          | CI, issue/PR conventions and ownership                         |
 | `docs/engineering/` | Setup, architecture, acceptance and ownership contracts        |
 
-One Payload identity system governs editing. Public data comes from selected publication snapshots; drafts are not automatically live. Phase 3 stores and validates arbitrary owner design settings. The public renderer and complete Design Studio UI remain later work. See [architecture](docs/engineering/architecture.md) and [roadmap](docs/engineering/roadmap.md).
+One Payload identity system governs editing. Public data comes from selected publication snapshots; drafts are not automatically live. The public renderer consumes arbitrary validated palettes, licensed fonts, layouts, responsive/state settings and motion. The complete visual Design Studio UI, scheduling, approved personal content migration and deployment remain later work. See [architecture](docs/engineering/architecture.md) and [roadmap](docs/engineering/roadmap.md).
 
 ## License and credits
 

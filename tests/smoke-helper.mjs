@@ -71,11 +71,19 @@ export async function verifyFoundation(t, preview = false) {
   assert.match(page.headers.get('x-robots-tag'), /noindex/);
   assert.equal(page.headers.get('x-powered-by'), null);
   const html = await page.text();
-  assert.match(html, /<h1>Engineering foundation<\/h1>/);
-  assert.match(html, /Phase 2 build verification placeholder/);
+  assert.match(html, /<main\b[^>]*id="main-content"/);
+  assert.match(html, /data-design-root=/);
+  assert.match(html, /data-public-revision=/);
+  assert.match(html, /<h1(?:\s[^>]*)?>/);
+  assert.match(html, /Skip to content/);
+  assert.match(html, /href="\/(?:work|profile|journal|contact)"/);
+  assert.ok(
+    !html.includes('PRIVATE-PHASE4'),
+    'Public shell must not serialize private drafts',
+  );
   assert.match(html, /<meta name="robots" content="noindex, nofollow"/);
   const script = html.match(/<script[^>]+src="([^"?]+\.js(?:\?[^\"]*)?)"/);
-  assert.ok(script, 'The placeholder must reference a real JavaScript asset');
+  assert.ok(script, 'The public shell must reference a real JavaScript asset');
   assert.ok(script[1].startsWith('/_next/static/'));
   const asset = await fetch(new URL(script[1].replaceAll('&amp;', '&'), base));
   assert.equal(asset.status, 200);
