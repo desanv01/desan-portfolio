@@ -94,7 +94,7 @@ jobs:
         id: preview
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: phase5-6-preview-${{ github.sha }}
+          name: phase7-8-preview-${{ github.sha }}
           path: tmp/phase2-preview/
           include-hidden-files: true
           if-no-files-found: error
@@ -103,6 +103,6 @@ jobs:
         env:
           PREVIEW_URL: ${{ steps.preview.outputs.artifact-url }}
         run: |
-          echo "### Phases 5–6 owner and public site preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Phases 7–8 verified site preview" >> "$GITHUB_STEP_SUMMARY"
           echo "[Download the standalone preview]($PREVIEW_URL)" >> "$GITHUB_STEP_SUMMARY"
           echo "Run with the pinned Node version and your own private database/runtime configuration using the included README. This is a downloadable engineering preview, not a hosted production deployment. No database content, credentials or private media are included." >> "$GITHUB_STEP_SUMMARY"

@@ -2,6 +2,7 @@ import type { CollectionConfig, Field } from 'payload';
 import { APIError } from 'payload';
 import { isOwner, never, bootstrapCapability } from './access';
 import { ensureRecoveryAvailable } from './email';
+import { ownerCookiePolicy } from './runtime-policy';
 import { SafeValidationError } from './validation';
 
 const ownerAccess = {
@@ -188,6 +189,7 @@ export const owners: CollectionConfig = {
     maxLoginAttempts: 5,
     lockTime: 600000,
     useSessions: true,
+    cookies: ownerCookiePolicy(),
     forgotPassword: {
       generateEmailHTML: ({ token } = {}) => {
         const url = new URL(

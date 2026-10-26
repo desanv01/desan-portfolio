@@ -1,10 +1,9 @@
-import { readFile } from 'node:fs/promises';
-import { basename, resolve } from 'node:path';
+import { basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { getPayload } from 'payload';
 import config from '@/cms/config';
 import { currentPublication } from '@/cms/publication';
-import { mediaDirectory } from '@/cms/media';
+import { readStoredMedia } from '@/cms/media-storage';
 
 export const dynamic = 'force-dynamic';
 export async function GET(
@@ -22,7 +21,7 @@ export async function GET(
   )
     return new Response(null, { status: 404 });
   try {
-    const bytes = await readFile(resolve(mediaDirectory, media.filename));
+    const bytes = await readStoredMedia(media.filename);
     if (createHash('sha256').update(bytes).digest('hex') !== media.sha256)
       return new Response(null, { status: 404 });
     return new Response(bytes, {

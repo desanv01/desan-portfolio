@@ -2,6 +2,12 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, open, rename, unlink, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import {
+  PrivateStorageError,
+  readPrivateObject,
+  storageConfig,
+  writePrivateObject,
+} from '../../cms/media-storage';
+import {
   date,
   GITHUB_CACHE_TTL_MS,
   metadataFromAPI,
@@ -48,15 +54,29 @@ const failures: Failure[] = [
 export async function readEntry(
   directory: string,
   repository: Repository,
+  strictCloud = false,
 ): Promise<CacheEntry | null> {
   let file;
   try {
-    file = await open(pathFor(directory, repository), 'r');
-    if ((await file.stat()).size > MAX_CACHE_BYTES) return null;
-    const raw = await file.readFile({
-      encoding: 'utf8',
-      signal: AbortSignal.timeout(2000),
-    });
+    let raw: string;
+    if (process.env.GITHUB_METADATA_CACHE_STORAGE === 'supabase') {
+      const config = storageConfig();
+      raw = (
+        await readPrivateObject(
+          config.cacheBucket,
+          `github/${createHash('sha256').update(repository.url).digest('hex')}.json`,
+          MAX_CACHE_BYTES,
+          { config, timeoutMs: strictCloud ? 10000 : 1000 },
+        )
+      ).toString('utf8');
+    } else {
+      file = await open(pathFor(directory, repository), 'r');
+      if ((await file.stat()).size > MAX_CACHE_BYTES) return null;
+      raw = await file.readFile({
+        encoding: 'utf8',
+        signal: AbortSignal.timeout(2000),
+      });
+    }
     if (Buffer.byteLength(raw) > MAX_CACHE_BYTES) return null;
     const data = JSON.parse(raw) as CacheEntry;
     if (data.schemaVersion !== 1 || data.repositoryURL !== repository.url)
@@ -80,7 +100,13 @@ export async function readEntry(
       retryAt: data.retryAt ? date(data.retryAt) : null,
       failure: data.failure,
     };
-  } catch {
+  } catch (error) {
+    if (
+      strictCloud &&
+      process.env.GITHUB_METADATA_CACHE_STORAGE === 'supabase' &&
+      !(error instanceof PrivateStorageError && error.code === 'not-found')
+    )
+      throw new PrivateStorageError();
     return null;
   } finally {
     await file?.close();
@@ -91,6 +117,17 @@ async function writeEntry(
   repository: Repository,
   entry: CacheEntry,
 ) {
+  if (process.env.GITHUB_METADATA_CACHE_STORAGE === 'supabase') {
+    const config = storageConfig();
+    await writePrivateObject(
+      config.cacheBucket,
+      `github/${createHash('sha256').update(repository.url).digest('hex')}.json`,
+      Buffer.from(JSON.stringify(entry)),
+      'application/json',
+      { config, upsert: true },
+    );
+    return;
+  }
   await mkdir(directory, { recursive: true, mode: 0o700 });
   const filename = pathFor(directory, repository);
   const temporary = `${filename}.${randomUUID()}.tmp`;
@@ -185,7 +222,16 @@ export async function refreshGitHubMetadata(
     throw new Error('Repository is not explicitly allowlisted');
   const directory = cacheDirectory(options.directory);
   const now = (options.now || (() => new Date()))();
-  const previous = await readEntry(directory, repository);
+  let previous: CacheEntry | null;
+  try {
+    previous = await readEntry(directory, repository, true);
+  } catch {
+    return {
+      view: view(null, repository, now),
+      outcome: 'deferred',
+      failure: 'storage',
+    };
+  }
   if (previous?.retryAt && Date.parse(previous.retryAt) > now.getTime())
     return {
       view: view(previous, repository, now),

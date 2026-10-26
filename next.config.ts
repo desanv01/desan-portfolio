@@ -1,6 +1,5 @@
 import type { NextConfig } from 'next';
 import { withPayload } from '@payloadcms/next/withPayload';
-import { indexable } from './src/public-data/discovery';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -35,9 +34,14 @@ const nextConfig: NextConfig = {
       })),
       {
         source: '/:path*',
-        headers: indexable()
-          ? []
-          : [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self'; object-src 'none'; base-uri 'self'",
+          },
+        ],
       },
     ];
   },

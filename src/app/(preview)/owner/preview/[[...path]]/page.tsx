@@ -93,24 +93,29 @@ export default async function Preview({
     if (route === 'resume') return Resume();
     if (route === 'search')
       return Search({ searchParams: Promise.resolve(cleanQuery) });
-    return Missing();
+    return Missing({ site });
   });
   return (
     <DesignStudioPreviewProvider>
-      <PreviewNavigation receipt={receipt} />
-      <div
-        role="status"
-        style={{
-          padding: '6px 16px',
-          background: '#edac68',
-          color: '#111',
-          fontSize: 12,
-          textAlign: 'center',
-        }}
+      <PreviewNavigation
+        receipt={receipt}
+        pathname={'/' + path.map(encodeURIComponent).join('/')}
+        origin={process.env.CMS_SERVER_URL || 'http://127.0.0.1:3000'}
       >
-        PRIVATE PREVIEW · Saved selection · Live site unchanged
-      </div>
-      {content}
+        <div
+          role="status"
+          style={{
+            padding: '6px 16px',
+            background: '#edac68',
+            color: '#111',
+            fontSize: 12,
+            textAlign: 'center',
+          }}
+        >
+          PRIVATE PREVIEW · Saved selection · Live site unchanged
+        </div>
+        {content}
+      </PreviewNavigation>
     </DesignStudioPreviewProvider>
   );
 }

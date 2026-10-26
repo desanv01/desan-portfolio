@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/public/public-link';
 import { getPublicSite } from '@/public-data/server';
 import { recordPath, searchRecords } from '@/public-data';
 import { PublicPage } from '@/components/public/public-page';

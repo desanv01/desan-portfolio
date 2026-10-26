@@ -1,4 +1,4 @@
-# Owner workspace and local recovery
+# Owner workspace and recovery
 
 Open `/owner`. The custom workspace uses Payload's HttpOnly owner session; the native `/admin` remains available for operator access. Draft saves require the record revision, so a competing save returns a conflict and keeps local edits. Saved versions and local draft exports can be restored into the editor without changing the public site.
 
@@ -8,8 +8,8 @@ Featured placement has an independent numeric order; it does not reorder the ful
 
 Publishing pins one design version and explicit content versions. A private preview receipt renders that saved selection through the real public templates; authenticated preview media is never placed in a shared cache. Draft presentation changes in the Studio are local preview overrides until saved. A newly uploaded resource needs a saved design and refreshed receipt. Publishing, withdrawal and publication restoration use the expected current publication revision.
 
-Run `npm run owner:jobs` in a separate local terminal for scheduled publication. The UI reports the worker heartbeat; it never claims a stopped worker is running. A due job uses its saved versions and expected publication revision. Conflicts require review/retry; restarting the process does not silently include newer draft versions. Stop the worker with Ctrl+C. Production process supervision belongs to the deployment phase.
+Run `npm run owner:jobs` in a separate local terminal for scheduled publication. The UI reports the worker heartbeat; it never claims a stopped worker is running. A due job uses its saved versions and expected publication revision. Conflicts require review/retry; restarting the process does not silently include newer draft versions. Stop the worker with Ctrl+C. In the hosted configuration, managed delivery replaces the local process. The UI distinguishes configuration from the last actual delivery; an idle queue has no heartbeat.
 
 The private recovery export contains current drafts, history, publication snapshots, schedules and media hashes, but no credentials or media bytes. The editor accepts an archive up to 50 MiB and extracts current drafts for the 3 MiB editing API. Recovery is limited to existing records in the same installation, with a reviewed field comparison and revision checks. It creates draft versions atomically, leaving live publication, historical rows, schedules and media files unchanged. Keep the original complete archive and back up the database and media directory separately for operator/disaster recovery.
 
-For local password recovery, `LOCAL_RECOVERY_SPOOL=1` writes the recovery message under the private configured spool directory. It sends no email. A real delivery adapter and production owner setup remain deployment decisions. Never commit a recovery message, session, password, export or database file.
+For local password recovery, `LOCAL_RECOVERY_SPOOL=1` writes the recovery message under the private configured spool directory. It sends no email. The free hosted configuration uses the trusted operator recovery procedure in OPERATIONS.md; its recovery screen does not offer email delivery. Never commit a recovery message, session, password, export or database file.

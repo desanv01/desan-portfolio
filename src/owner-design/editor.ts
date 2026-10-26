@@ -409,6 +409,38 @@ export function duplicateNode(
     return fresh.id;
   }
   const root = copy(id);
+  childrenAt(next, parent).push(root);
+  function contains(rootIds: string[], key: string): boolean {
+    const visited = new Set<string>(),
+      pending = [...rootIds];
+    while (pending.length) {
+      const id = pending.pop()!;
+      if (id === key) return true;
+      if (visited.has(id)) continue;
+      visited.add(id);
+      pending.push(...(d.nodes.find((n) => n.id === id)?.children ?? []));
+    }
+    return false;
+  }
+  const destinationPages = d.pages.filter((page) =>
+    parent.kind === 'page'
+      ? page.id === parent.id
+      : parent.kind === 'template'
+        ? page.templateId === parent.id
+        : parent.kind === 'shell'
+          ? true
+          : contains(
+              [
+                ...page.rootIds,
+                ...(d.templates.find((t) => t.id === page.templateId)
+                  ?.rootIds ?? []),
+                ...Object.values(d.sharedShell).flat(),
+              ],
+              parent.id,
+            ),
+  );
+  const destinationPage =
+    destinationPages.length === 1 ? destinationPages[0].id : undefined;
   // Internal references are remapped; copied anchors get fresh stable identifiers.
   function remap(v: Json): Json {
     if (Array.isArray(v)) return v.map(remap);
@@ -416,9 +448,16 @@ export function duplicateNode(
       return Object.fromEntries(
         Object.entries(v).map(([k, x]) => [
           k,
-          (k === 'targetId' || k === 'nodeId') && typeof x === 'string'
-            ? (map.get(x) ?? x)
-            : remap(x),
+          (k === 'collection.emptyState' || k === 'shell.navOrder') &&
+          Array.isArray(x)
+            ? x.map((value) =>
+                typeof value === 'string'
+                  ? (map.get(value) ?? value)
+                  : remap(value),
+              )
+            : (k === 'targetId' || k === 'nodeId') && typeof x === 'string'
+              ? (map.get(x) ?? x)
+              : remap(x),
         ]),
       );
     return v;
@@ -428,10 +467,11 @@ export function duplicateNode(
     n.scope = remap(n.scope as unknown as Json) as unknown as Scope;
     if (n.scope.values['section.anchor'])
       n.scope.values['section.anchor'] = freshId;
-    if (n.target?.nodeId)
-      n.target.nodeId = map.get(n.target.nodeId) ?? n.target.nodeId;
+    if (n.target?.nodeId && map.has(n.target.nodeId)) {
+      n.target.nodeId = map.get(n.target.nodeId)!;
+      if (destinationPage) n.target.pageId = destinationPage;
+    }
   }
-  childrenAt(next, parent).push(root);
   return assertValidDesign(next);
 }
 export function removeNode(d: DesignDocument, id: string): DesignDocument {

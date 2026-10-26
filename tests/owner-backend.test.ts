@@ -19,6 +19,8 @@ test(
     const { bootstrapCapability } = await import('../src/cms/access');
     const { createEmptyDesign } = await import('../src/design/model');
     const { ownerHTTP } = await import('../src/owner/http');
+    const { POST: internalJobs } =
+      await import('../src/app/api/internal/jobs/route');
     const { processSchedules, createPreview, workerHeartbeat } =
       await import('../src/owner/service');
     const { publish, currentPublication } =
@@ -40,12 +42,15 @@ test(
           ...(method === 'GET' ? {} : { body: Buffer.concat(chunks) }),
         });
         const path = new URL(request.url).pathname;
-        const response = path.startsWith('/api/owner/')
-          ? await ownerHTTP(
-              request,
-              path.slice('/api/owner/'.length).split('/'),
-            )
-          : await handleEndpoints({ config, request });
+        const response =
+          path === '/api/internal/jobs'
+            ? await internalJobs(request)
+            : path.startsWith('/api/owner/')
+              ? await ownerHTTP(
+                  request,
+                  path.slice('/api/owner/'.length).split('/'),
+                )
+              : await handleEndpoints({ config, request });
         outgoing.writeHead(
           response.status,
           Object.fromEntries(response.headers),
@@ -99,6 +104,8 @@ test(
       false,
     );
     assert.equal(login.status, 200);
+    assert.match(login.headers.get('set-cookie') || '', /HttpOnly/);
+    assert.match(login.headers.get('set-cookie') || '', /SameSite=Lax/);
     cookie = login.headers.get('set-cookie')!.split(';')[0];
     const req = await createLocalReq(
       { user: { ...owner, collection: 'owners' } },
@@ -395,7 +402,28 @@ test(
     assert.equal(firstLive.content.skills[0].title, 'Selected A');
     assert.deepEqual(await processSchedules(payload, req), []);
     const staleJob = await createSchedule();
-    const stale = await processSchedules(payload, req);
+    const jobsSecret = `synthetic-private-job-${randomUUID()}`;
+    process.env.JOBS_SECRET = jobsSecret;
+    const deliver = (secret?: string) =>
+      fetch(`${base}/api/internal/jobs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(secret ? { 'x-desan-job-secret': secret } : {}),
+        },
+        body: '{}',
+      });
+    assert.equal((await deliver()).status, 401);
+    assert.equal((await deliver('incorrect')).status, 401);
+    const delivered = await deliver(jobsSecret);
+    assert.equal(delivered.status, 200, await delivered.clone().text());
+    assert.equal((await delivered.json()).processed[0].status, 'conflict');
+    const stale = (await (await api('/owner/schedules')).json()).docs.filter(
+      (job: { id: string }) => job.id === staleJob.id,
+    );
+    const replay = await deliver(jobsSecret);
+    assert.equal(replay.status, 200);
+    assert.deepEqual((await replay.json()).processed, []);
     assert.equal(stale[0].status, 'conflict');
     assert.equal(
       (await currentPublication(payload))?.revision,
@@ -467,7 +495,17 @@ test(
       exportedResponse.headers.get('cache-control'),
       'private, no-store',
     );
-    const exported = await exportedResponse.json();
+    const archiveBytes = Buffer.from(await exportedResponse.arrayBuffer());
+    const { createHash } = await import('node:crypto');
+    assert.equal(
+      createHash('sha256').update(archiveBytes).digest('hex'),
+      exportedResponse.headers.get('x-archive-sha256'),
+    );
+    assert.equal(
+      archiveBytes.length,
+      Number(exportedResponse.headers.get('x-archive-bytes')),
+    );
+    const exported = JSON.parse(archiveBytes.toString());
     assert.ok(exported.collections.skills.versions.length >= 3);
     assert.equal(exported.snapshots.length, 2);
     assert.ok(exported.schedules.length >= 3);

@@ -118,7 +118,10 @@ export function Publishing({
     [history, setHistory] = useState<Published[]>([]),
     [scheduler, setScheduler] = useState<{
       running: boolean;
-      lastSeenAt?: string;
+      lastSeenAt?: string | null;
+      mode: 'managed' | 'local';
+      configured: boolean;
+      lastActualDelivery: string | null;
     } | null>(null),
     [refresh, setRefresh] = useState(0),
     [query, setQuery] = useState('');
@@ -478,13 +481,18 @@ export function Publishing({
               Schedule selection
             </button>
             <p className="owner-muted">
-              {scheduler?.running
-                ? 'Local scheduler is running.'
-                : 'Local scheduler is stopped or has not checked in. Queued jobs remain saved and will run when it resumes.'}
+              {scheduler?.mode === 'managed'
+                ? scheduler.configured
+                  ? 'Managed delivery is configured. Due jobs are checked every minute; an idle queue does not produce a delivery heartbeat.'
+                  : 'Managed delivery is not configured. Queued jobs remain saved until configuration is completed.'
+                : scheduler?.running
+                  ? 'Local scheduler is running.'
+                  : 'Local scheduler is stopped or has not checked in. Queued jobs remain saved and will run when it resumes.'}
             </p>
             {scheduler?.lastSeenAt && (
               <small>
-                Last seen {new Date(scheduler.lastSeenAt).toLocaleString()}
+                {scheduler.mode === 'managed' ? 'Last delivery' : 'Last seen'}{' '}
+                {new Date(scheduler.lastSeenAt).toLocaleString()}
               </small>
             )}
           </section>

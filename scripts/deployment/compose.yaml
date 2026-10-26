@@ -1,0 +1,66 @@
+name: desan-release
+services:
+  database:
+    image: postgres:17-bookworm@sha256:858bb5e98eed02eb8cafbcdc007f9a65d1b613972028944a8ec2133ccaf80d27
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: desan
+      POSTGRES_USER: desan
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a unique private database password}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U desan -d desan']
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  web:
+    image: ${DESAN_IMAGE:?Set the reviewed release image tag}
+    restart: unless-stopped
+    env_file: ${DESAN_RUNTIME_ENV:?Absolute path to private runtime environment file}
+    environment:
+      MEDIA_DIRECTORY: /data/media
+      GITHUB_METADATA_CACHE_DIRECTORY: /data/github
+      RECOVERY_SPOOL_DIRECTORY: /data/recovery
+    ports:
+      - '127.0.0.1:${DESAN_HTTP_PORT:-3009}:3000'
+    volumes:
+      - media:/data/media
+      - github:/data/github
+      - recovery:/data/recovery
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  jobs:
+    image: ${DESAN_IMAGE:?Set the reviewed release image tag}
+    restart: unless-stopped
+    env_file: ${DESAN_RUNTIME_ENV:?Absolute path to private runtime environment file}
+    environment:
+      MEDIA_DIRECTORY: /data/media
+      GITHUB_METADATA_CACHE_DIRECTORY: /data/github
+      RECOVERY_SPOOL_DIRECTORY: /data/recovery
+    command:
+      ['node', '--import', 'tsx', 'scripts/owner-jobs.ts', 'run', '--watch']
+    volumes:
+      - media:/data/media
+      - github:/data/github
+      - recovery:/data/recovery
+    depends_on:
+      database:
+        condition: service_healthy
+volumes:
+  database:
+  media:
+  github:
+  recovery:

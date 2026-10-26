@@ -108,4 +108,5 @@ export type OwnerPublication = {
 export type OwnerWorkspaceData = {
   collections: OwnerCollection[];
   publication: OwnerPublication | null;
+  limits: { mediaBytes: number; requestBytes: number };
 };

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { indexable } from './public-data/discovery';
 import { readPublishedSite } from './public-data/node-loader';
 import {
   classifyPublicRoute,
@@ -6,7 +7,7 @@ import {
 } from './public-data/routing';
 
 /** Next Proxy uses Node.js; no internal HTTP, Host-based fetch or raw CMS reads. */
-export async function proxy(request: NextRequest) {
+async function routePublicRequest(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (!needsPublicRouteCheck(pathname, request.method))
     return NextResponse.next();
@@ -50,6 +51,15 @@ export async function proxy(request: NextRequest) {
       'X-Robots-Tag': 'noindex, nofollow',
     },
   });
+}
+
+// Resolve indexing from runtime configuration while preserving all existing
+// publication-aware status codes, redirects and missing-route handling.
+export async function proxy(request: NextRequest) {
+  const response = await routePublicRequest(request);
+  if (!indexable() || request.nextUrl.pathname === '/search')
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return response;
 }
 
 export const config = {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useSyncExternalStore, type ReactNode } from 'react';
-import Link from 'next/link';
+import Link from './public-link';
 import {
   compileDesignStyles,
   createCopperDesign,

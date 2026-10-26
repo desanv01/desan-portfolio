@@ -4,7 +4,7 @@ import {
   BoundRecordSummary,
   BoundRelationGroups,
 } from './bound-professional';
-import Link from 'next/link';
+import Link, { PublicAnchor } from './public-link';
 import {
   list,
   recordPath,
@@ -94,9 +94,9 @@ export function ExperienceRecords({
         >
           <div className="record-organization">
             {safeHref(record.organizationURL) ? (
-              <a href={safeHref(record.organizationURL)!}>
+              <PublicAnchor href={safeHref(record.organizationURL)!}>
                 {text(record.organization, record.title)}
-              </a>
+              </PublicAnchor>
             ) : (
               text(record.organization, record.title)
             )}
@@ -330,9 +330,9 @@ export function ProfessionalRecords({
               </BoundRecordDetails>
             ) : null}
             {safeHref(record.url) && (
-              <a href={safeHref(record.url)!} className="text-link">
+              <PublicAnchor href={safeHref(record.url)!} className="text-link">
                 View source ↗
-              </a>
+              </PublicAnchor>
             )}
             <Relations
               site={site}

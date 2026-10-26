@@ -1,4 +1,5 @@
 'use client';
+import { observePreviewDiagnostics } from './preview-diagnostics';
 import {
   createContext,
   useContext,
@@ -62,46 +63,12 @@ export function DesignStudioPreviewProvider({
   const [state, setState] = useState<StudioPreviewState | null>(null);
   useEffect(() => {
     if (!state) return;
-    let cancelled = false;
-    const timer = window.setTimeout(async () => {
-      await document.fonts?.ready;
-      if (cancelled) return;
-      const overflow = [
-        ...document.querySelectorAll<HTMLElement>(
-          '[data-design-root] [data-design-node]',
-        ),
-      ]
-        .filter((n) => n.clientWidth > 0 && n.scrollWidth > n.clientWidth + 8)
-        .map((n) => n.dataset.designNode)
-        .filter((id, index, ids) => ids.indexOf(id) === index)
-        .slice(0, 12);
-      const fonts = document.fonts
-        ? [...document.fonts]
-            .filter((f) => f.status === 'error')
-            .map((f) => f.family)
-            .slice(0, 8)
-        : [];
+    return observePreviewDiagnostics(window, document, (warnings) =>
       window.parent.postMessage(
-        {
-          type: 'owner-design-preview-diagnostics',
-          warnings: [
-            ...overflow.map(
-              (id) =>
-                `${id}: content overflows its width. Inspect width, wrapping, grid tracks and padding at this device size.`,
-            ),
-            ...fonts.map(
-              (name) =>
-                `${name}: font loading failed. Check the pinned WOFF2 resource and fallback families.`,
-            ),
-          ],
-        },
+        { type: 'owner-design-preview-diagnostics', warnings },
         window.location.origin,
-      );
-    }, 350);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
+      ),
+    );
   }, [state]);
   useEffect(() => {
     function receive(event: MessageEvent) {

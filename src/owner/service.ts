@@ -22,6 +22,8 @@ import type {
 } from './contracts';
 import { lock, transaction } from './transaction';
 import { recoveryFieldChanges } from './recovery-diff';
+import { mediaLimitBytes } from '../cms/media-storage';
+import { ownerRequestLimitBytes } from './request-body';
 import type { RecoveryPlan } from './contracts';
 
 export const editableCollections = [
@@ -254,6 +256,10 @@ export async function workspace(
       })
     : null;
   return {
+    limits: {
+      mediaBytes: mediaLimitBytes(),
+      requestBytes: ownerRequestLimitBytes(),
+    },
     collections: editableCollections.map((slug) => ({
       slug,
       label: label(payload.collections[slug].config.labels.plural, slug),
@@ -560,12 +566,18 @@ export async function schedulerStatus(payload: Payload, req: PayloadRequest) {
     }
   )?.value;
   const lastSeenAt = value?.lastSeenAt || null;
+  const managed = process.env.SCHEDULE_MODE === 'managed';
   return {
+    mode: managed ? ('managed' as const) : ('local' as const),
+    configured: managed
+      ? !!process.env.JOBS_SECRET && process.env.JOBS_SECRET.length >= 32
+      : !!lastSeenAt && !value?.stopped,
+    lastActualDelivery: managed ? lastSeenAt : null,
     lastSeenAt,
     running:
       !!lastSeenAt &&
       !value?.stopped &&
-      Date.now() - Date.parse(lastSeenAt) < 45000,
+      Date.now() - Date.parse(lastSeenAt) < (managed ? 180000 : 45000),
   };
 }
 export async function workerHeartbeat(
@@ -717,6 +729,7 @@ export async function processSchedules(
   payload: Payload,
   req: PayloadRequest,
   now = new Date(),
+  options: { limit?: number; deadlineAt?: number } = {},
 ) {
   requireOwner(req);
   const due = await payload.find({
@@ -728,7 +741,7 @@ export async function processSchedules(
         { runAt: { less_than_equal: now.toISOString() } },
       ],
     },
-    limit: 100,
+    limit: Math.min(100, Math.max(1, Math.floor(options.limit || 100))),
     sort: 'runAt',
     depth: 0,
     overrideAccess: true,
@@ -736,6 +749,7 @@ export async function processSchedules(
   });
   const results: Schedule[] = [];
   for (const item of due.docs) {
+    if (options.deadlineAt && Date.now() >= options.deadlineAt) break;
     const key = String((item as unknown as Data).key);
     // Claim = held database transaction lock, with no committed processing state
     // to strand after a crash. Publication and completion commit together.

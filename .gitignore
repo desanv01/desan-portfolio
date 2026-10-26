@@ -19,6 +19,7 @@
 !/.env.example
 !/playwright.config.*
 !/compose.yaml
+!/.dockerignore
 !/src/
 !/tests/
 !/scripts/

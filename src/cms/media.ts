@@ -5,6 +5,12 @@ import { create as parseFont } from 'fontkit';
 import type { CollectionConfig } from 'payload';
 import { isOwner, never, requireOwner } from './access';
 import { SafeValidationError } from './validation';
+import {
+  cloudMedia,
+  mediaLimitBytes,
+  storageConfig,
+  writePrivateObject,
+} from './media-storage';
 
 /** Browsers may supply no MIME (multipart then uses octet-stream). Only known
  * byte signatures can fill that gap; declared mismatches remain invalid. Full
@@ -47,6 +53,7 @@ export const media: CollectionConfig = {
   access: { create: isOwner, read: isOwner, update: isOwner, delete: never },
   upload: {
     staticDir: mediaDirectory,
+    disableLocalStorage: cloudMedia(),
     mimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'font/woff2'],
     filesRequiredOnCreate: true,
     pasteURL: { allowList: [] },
@@ -81,6 +88,34 @@ export const media: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        if (cloudMedia() && operation === 'create' && req.file) {
+          requireOwner(req);
+          if (
+            typeof data.filename !== 'string' ||
+            createHash('sha256').update(req.file.data).digest('hex') !==
+              data.sha256
+          )
+            throw new Error('Validated media identity is required');
+          const config = storageConfig();
+          await writePrivateObject(
+            config.mediaBucket,
+            data.filename,
+            req.file.data,
+            req.file.mimetype,
+            { config },
+          );
+        }
+        return data;
+      },
+    ],
+    afterRead: [
+      ({ doc }) => {
+        if (cloudMedia() && doc.id) doc.url = `/api/owner/media/${doc.id}`;
+        return doc;
+      },
+    ],
     beforeOperation: [
       async ({ args, operation, req }) => {
         if (req.file) requireOwner(req);
@@ -91,9 +126,9 @@ export const media: CollectionConfig = {
           );
         if (req.file && operation === 'create') {
           const file = req.file;
-          if (file.size > 10 * 1024 * 1024 || !file.data.length)
+          if (file.size > mediaLimitBytes() || !file.data.length)
             throw new SafeValidationError(
-              'Upload must contain 1 byte to 10 MiB',
+              `Upload must contain 1 byte to ${mediaLimitBytes() / 1024 / 1024} MiB`,
               ['file'],
             );
           const bytes = file.data;
@@ -128,9 +163,9 @@ export const media: CollectionConfig = {
             file.mimetype = 'image/png';
             file.name = `${randomUUID()}.png`;
             file.size = file.data.length;
-            if (file.size > 10 * 1024 * 1024)
+            if (file.size > mediaLimitBytes())
               throw new SafeValidationError(
-                'Transformed upload exceeds 10 MiB',
+                `Transformed upload exceeds ${mediaLimitBytes() / 1024 / 1024} MiB`,
                 ['file'],
               );
             args.data.kind = 'image';

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { PublicAnchor } from './public-link';
 import { safeHref } from '@/public-data';
 
 /** Only semantic Lexical nodes are rendered; source markup and private fields are never HTML. */
@@ -97,9 +98,9 @@ export function RichText({ value }: { value: unknown }) {
             : {};
         const href = safeHref(fields.url || node.url);
         return href ? (
-          <a key={key} href={href}>
+          <PublicAnchor key={key} href={href}>
             {children}
-          </a>
+          </PublicAnchor>
         ) : (
           <span key={key}>{children}</span>
         );

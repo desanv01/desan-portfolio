@@ -4,7 +4,7 @@ import { siteOrigin, publicOrigin } from '@/public-data/discovery';
 import { routeMetadata } from '@/public-data/discovery';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/public/public-link';
 import { getPublicSite } from '@/public-data/server';
 import {
   list,
