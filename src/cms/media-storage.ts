@@ -167,6 +167,30 @@ export async function readPrivateObject(
       },
     );
     if (!response.ok) {
+      // Some Storage deployments wrap NoSuchKey/404 in HTTP 400. Recognize
+      // only that bounded, typed envelope after the private-bucket gate.
+      if (response.status === 400) {
+        const data: unknown = JSON.parse(
+          (await boundedResponse(response, 2048, controller.signal)).toString(
+            'utf8',
+          ),
+        );
+        if (
+          data !== null &&
+          typeof data === 'object' &&
+          !Array.isArray(data) &&
+          'code' in data &&
+          data.code === 'NoSuchKey' &&
+          'statusCode' in data &&
+          data.statusCode === '404' &&
+          'error' in data &&
+          data.error === 'not_found' &&
+          'message' in data &&
+          typeof data.message === 'string'
+        )
+          throw new PrivateStorageError('not-found');
+        throw new PrivateStorageError();
+      }
       void response.body?.cancel().catch(() => {});
       throw new PrivateStorageError(
         response.status === 404 ? 'not-found' : 'unavailable',

@@ -9,7 +9,11 @@ import {
 } from '../src/cms/media-storage.ts';
 import { jobsAuthorized } from '../src/owner/jobs-auth.ts';
 import { postgresPoolOptions } from '../src/cms/runtime-policy.ts';
-import { refreshGitHubMetadata } from '../src/integrations/github/cache.ts';
+import {
+  readEntry,
+  refreshGitHubMetadata,
+} from '../src/integrations/github/cache.ts';
+import { repositoryFromURL } from '../src/integrations/github/model.ts';
 import { readProjectGitHubMetadata } from '../src/integrations/github/index.ts';
 
 const config = {
@@ -184,6 +188,69 @@ test('cloud job secret is scoped and timing-safe; verified TLS options cannot be
   );
 });
 
+test('private object reads recognize the real HTTP 400 NoSuchKey envelope and fail closed for other errors', async () => {
+  const missing = {
+    statusCode: '404',
+    error: 'not_found',
+    message: 'Object not found',
+    code: 'NoSuchKey',
+  };
+  const cases = [
+    [400, JSON.stringify(missing), 'not-found'],
+    [404, '', 'not-found'],
+    [400, '{malformed', 'unavailable'],
+    [400, JSON.stringify({ ...missing, code: 'NoSuchBucket' }), 'unavailable'],
+    [400, JSON.stringify({ ...missing, code: 'AccessDenied' }), 'unavailable'],
+    [400, JSON.stringify({ ...missing, statusCode: '403' }), 'unavailable'],
+    [400, JSON.stringify({ ...missing, statusCode: 404 }), 'unavailable'],
+    [400, JSON.stringify({ ...missing, error: 'unauthorized' }), 'unavailable'],
+    [400, JSON.stringify({ ...missing, message: null }), 'unavailable'],
+    [400, JSON.stringify([missing]), 'unavailable'],
+    [400, 'null', 'unavailable'],
+    [
+      400,
+      JSON.stringify({ ...missing, extra: 'x'.repeat(2048) }),
+      'unavailable',
+    ],
+    [401, JSON.stringify(missing), 'unavailable'],
+    [403, JSON.stringify(missing), 'unavailable'],
+    [429, JSON.stringify(missing), 'unavailable'],
+    [500, JSON.stringify(missing), 'unavailable'],
+  ];
+  for (const [status, body, expected] of cases) {
+    let gate = false;
+    await assert.rejects(
+      readPrivateObject(config.cacheBucket, 'github/missing.json', 32768, {
+        config,
+        fetch: async (url) => {
+          if (url.includes('/bucket/')) {
+            gate = true;
+            return Response.json({ id: config.cacheBucket, public: false });
+          }
+          assert.equal(gate, true);
+          return new Response(body, { status });
+        },
+      }),
+      (error) =>
+        error instanceof PrivateStorageError && error.code === expected,
+      `HTTP ${status}: ${body.slice(0, 150)}`,
+    );
+  }
+  let objectCalls = 0;
+  await assert.rejects(
+    readPrivateObject(config.cacheBucket, 'github/missing.json', 32768, {
+      config,
+      fetch: async (url) => {
+        if (url.includes('/object/')) objectCalls++;
+        return Response.json(missing, { status: 400 });
+      },
+    }),
+    (error) =>
+      error instanceof PrivateStorageError && error.code === 'unavailable',
+  );
+  assert.equal(objectCalls, 0);
+});
+
 test('durable GitHub cache keeps last-good data in a private object and public reads never refresh GitHub', async () => {
   const names = [
     'SUPABASE_URL',
@@ -213,7 +280,15 @@ test('durable GitHub cache keeps last-good data in a private object and public r
     }
     return objects.has(path)
       ? new Response(objects.get(path))
-      : new Response(null, { status: 404 });
+      : Response.json(
+          {
+            statusCode: '404',
+            error: 'not_found',
+            message: 'Object not found',
+            code: 'NoSuchKey',
+          },
+          { status: 400 },
+        );
   };
   try {
     const url = 'https://github.com/example/repo',
@@ -290,6 +365,31 @@ test('durable GitHub cache keeps last-good data in a private object and public r
         .stars,
       11,
     );
+    // A slow storage object must not block a visitor, but an explicit refresh
+    // can wait longer for the last-good entry before deciding what to write.
+    globalThis.fetch = async (target, init) => {
+      if (!target.includes('/object/authenticated/'))
+        return healthyFetch(target, init);
+      const bytes = [...objects.values()][0];
+      let timer;
+      return new Response(
+        new ReadableStream({
+          start(controller) {
+            timer = setTimeout(() => {
+              controller.enqueue(bytes);
+              controller.close();
+            }, 1200);
+          },
+          cancel() {
+            clearTimeout(timer);
+          },
+        }),
+      );
+    };
+    const repository = repositoryFromURL(url);
+    assert.equal(await readEntry('', repository), null);
+    const slowOperationalRead = await readEntry('', repository, true);
+    assert.equal(slowOperationalRead.metadata.stars, 11);
   } finally {
     globalThis.fetch = originalFetch;
     for (const name of names) {

@@ -66,7 +66,7 @@ export async function readEntry(
           config.cacheBucket,
           `github/${createHash('sha256').update(repository.url).digest('hex')}.json`,
           MAX_CACHE_BYTES,
-          { config, timeoutMs: 1000 },
+          { config, timeoutMs: strictCloud ? 10000 : 1000 },
         )
       ).toString('utf8');
     } else {
