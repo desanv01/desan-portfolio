@@ -1,6 +1,6 @@
 # Roadmap and authorization boundary
 
-Phases 2 and 3 are complete. Phase 4 now implements the public frontend and publication-driven design renderer. Phase 5 and later remain planning only. A roadmap entry, dependency installation or approved design does not authorize starting a later phase.
+Phases 2–4 provide the foundation, backend, public frontend and publication-driven design renderer. The current Phase 5–6 change adds the owner workspace, visual Studio, scheduling, integrations and approved-content import. Acceptance requires its exact reviewed revision and successful CI. Phase 7 and later remain separate work. A roadmap entry, dependency installation or approved design does not authorize starting a later phase.
 
 | Phase                    | Planned outcome                                                                                              | Key acceptance boundary                                                              |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
@@ -11,4 +11,4 @@ Phases 2 and 3 are complete. Phase 4 now implements the public frontend and publ
 | 7 — Validation           | End-to-end, security, responsive/accessibility/performance and customization testing                         | Independent evidence and regression closure across visitor/owner flows               |
 | 8 — Launch/handover      | Production config, backup/restore, domain/release checks and owner guide                                     | Explicit deployment authorization, verified operating costs and release acceptance   |
 
-Production deployment, paid services, personal-content publication and unresolved license decisions remain separate gates. Phase 4 completion stops at the public frontend; it does not silently advance this roadmap.
+Production deployment, paid services, additional personal-content publication and unresolved license decisions remain separate gates. Phase 5–6 completion stops before comprehensive Phase 7 validation and Phase 8 launch; it does not silently advance this roadmap.

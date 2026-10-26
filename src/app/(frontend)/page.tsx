@@ -1,7 +1,8 @@
+import { routeMetadata } from '@/public-data/discovery';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import { getPublicSite } from '@/public-data/server';
-import { records, text } from '@/public-data';
+import { featuredRecords, records, text } from '@/public-data';
 import { PublicPage } from '@/components/public/public-page';
 import {
   Action,
@@ -14,9 +15,7 @@ import {
 export default async function Home() {
   const site = await getPublicSite();
   const profile = records(site, 'profile')[0];
-  const projects = records(site, 'projects').filter(
-    (record) => record.featured,
-  );
+  const projects = featuredRecords(site, 'projects');
   const posts = records(site, 'posts');
   const name = text(profile?.displayName, 'Desan Vasu').split(' ');
   return (
@@ -67,8 +66,7 @@ export default async function Home() {
                 </Action>
               </div>
               <p className="hero-tags" data-design-node="home.meta">
-                {records(site, 'skills')
-                  .filter((record) => record.featured)
+                {featuredRecords(site, 'skills')
                   .map((record) => record.title)
                   .join(' · ')}
               </p>
@@ -157,4 +155,8 @@ export default async function Home() {
       }}
     />
   );
+}
+
+export async function generateMetadata() {
+  return routeMetadata(await getPublicSite(), '/');
 }

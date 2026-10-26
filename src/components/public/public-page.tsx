@@ -4,15 +4,22 @@ import { list, records, safeHref, text, type PublicSite } from '@/public-data';
 import { DesignFrame } from './design-frame';
 import { DEFAULT_NAV } from './navigation';
 import { HashFocus } from './hash-focus';
+import {
+  structuredData,
+  serializeStructuredData,
+} from '@/public-data/discovery';
+import type { PublicRecord } from '@/public-data';
 
 export async function PublicPage({
   site,
   pageId,
   slots,
+  record,
 }: {
   site: PublicSite;
   pageId: string;
   slots: Record<string, ReactNode>;
+  record?: PublicRecord;
 }) {
   const preferences = await cookies();
   const design = site.status === 'ready' ? site.publication.design : undefined;
@@ -61,6 +68,16 @@ export async function PublicPage({
   );
   return (
     <>
+      {structuredData(site, pageId, record) && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeStructuredData(
+              structuredData(site, pageId, record)!,
+            ),
+          }}
+        />
+      )}
       <HashFocus />
       <DesignFrame
         site={site}

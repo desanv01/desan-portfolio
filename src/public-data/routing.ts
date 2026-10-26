@@ -10,11 +10,13 @@ const indexes = new Set([
   '/search',
 ]);
 const reserved =
-  /^\/(?:api|admin|_next|fonts|images|icons|\.well-known)(?:\/|$)/;
+  /^\/(?:api|admin|owner|_next|fonts|images|icons|\.well-known)(?:\/|$)/;
 const assets = new Set([
   '/robots.txt',
   '/favicon.ico',
   '/sitemap.xml',
+  '/feed.xml',
+  '/social-image',
   '/manifest.webmanifest',
 ]);
 export type PublicRouteDecision =

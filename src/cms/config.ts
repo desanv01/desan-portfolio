@@ -12,6 +12,7 @@ import { media } from './media';
 import { localRecoveryEmail } from './email';
 import { designCollection } from '../design/collection';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import { ownerState } from './owner-state';
 
 if (!process.env.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET.length < 32)
   throw new Error('PAYLOAD_SECRET must be at least 32 characters');
@@ -40,6 +41,7 @@ export default buildConfig({
     designCollection,
     snapshots,
     publicationState,
+    ownerState,
   ],
   typescript: { outputFile: resolve('src/cms/payload-types.ts') },
   upload: { limits: { fileSize: 10 * 1024 * 1024 } },

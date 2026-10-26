@@ -33,6 +33,10 @@ import { DesignEffects } from './design-effects';
 import { DesignAppearance, DesignDialog, DesignIcon } from './generic-controls';
 import { BoundAction, BoundMedia } from './bound-elements';
 import { useDesignBinding, usePublicDesignRuntime } from './design-context';
+import {
+  useDesignStudioPreview,
+  useIsOwnerDesignPreview,
+} from '../owner/design-studio-preview';
 
 const pages: Record<string, string> = {
   home: '/',
@@ -80,7 +84,11 @@ export function DesignFrame({
   brand?: string;
 }) {
   const baseline = useMemo(() => createCopperDesign(), []);
-  const design = site.status === 'ready' ? site.publication.design : baseline;
+  const preview = useDesignStudioPreview();
+  const ownerPreview = useIsOwnerDesignPreview();
+  const design =
+    preview?.document ||
+    (site.status === 'ready' ? site.publication.design : baseline);
   const allowedThemes = design.themes.filter(
     (theme) =>
       !theme.archived &&
@@ -94,16 +102,19 @@ export function DesignFrame({
     explicitMode,
     allowedThemes.map((theme) => theme.id),
   );
-  const mode = appearance.mode;
-  const themeId = allowedThemes.some((theme) => theme.id === appearance.themeId)
-    ? appearance.themeId
-    : design.defaultThemeId;
+  const mode = preview?.mode || appearance.mode;
+  const themeId =
+    preview?.themeId ||
+    (allowedThemes.some((theme) => theme.id === appearance.themeId)
+      ? appearance.themeId
+      : design.defaultThemeId);
   const viewport = useSyncExternalStore(
     subscribeViewport,
     viewportSnapshot,
     () => '1440|0',
   );
-  const [width, reduced] = viewport.split('|').map(Number);
+  const [width, systemReduced] = viewport.split('|').map(Number);
+  const reduced = preview ? Number(preview.reducedMotion) : systemReduced;
   const options = useMemo(
     () => ({
       pageId: design.pages.some((page) => page.id === pageId)
@@ -113,8 +124,12 @@ export function DesignFrame({
       mode,
       resources: site.status === 'ready' ? site.publication.media : [],
       scopeId: `public-${pageId}`,
+      ownerPreview,
+      previewStates: preview
+        ? { nodeId: preview.nodeId, states: preview.states }
+        : undefined,
     }),
-    [design, pageId, themeId, mode, site],
+    [design, pageId, themeId, mode, site, ownerPreview, preview],
   );
   const compiled = useMemo(
     () => compileDesignStyles(design, options),
@@ -131,6 +146,10 @@ export function DesignFrame({
           nodeId: id,
           width,
           reducedMotion: !!reduced,
+          states:
+            preview && (!preview.nodeId || preview.nodeId === id)
+              ? preview.states
+              : [],
         });
       } catch {
         value = undefined;
@@ -166,6 +185,7 @@ export function DesignFrame({
     slotAttributes,
     mode,
     themeId,
+    preview,
   ]);
   const nodes = new Map(design.nodes.map((node) => [node.id, node]));
   const page = design.pages.find((item) => item.id === pageId);

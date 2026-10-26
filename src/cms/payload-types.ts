@@ -82,6 +82,7 @@ export interface Config {
     'design-themes': DesignTheme;
     'publication-snapshots': PublicationSnapshot;
     'publication-state': PublicationState;
+    'owner-state': OwnerState;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -107,6 +108,7 @@ export interface Config {
       PublicationSnapshotsSelect<false> | PublicationSnapshotsSelect<true>;
     'publication-state':
       PublicationStateSelect<false> | PublicationStateSelect<true>;
+    'owner-state': OwnerStateSelect<false> | OwnerStateSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents':
       PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -231,6 +233,7 @@ export interface Skill {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -287,6 +290,7 @@ export interface Experience {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -353,6 +357,7 @@ export interface Education {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -413,6 +418,7 @@ export interface ProfessionalSection {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -530,6 +536,7 @@ export interface Project {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -600,6 +607,7 @@ export interface Post {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -657,6 +665,7 @@ export interface Profile {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -725,6 +734,7 @@ export interface Association {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -796,6 +806,7 @@ export interface ContextLink {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -858,6 +869,7 @@ export interface SiteSetting {
   visible?: boolean | null;
   sortOrder?: number | null;
   featured?: boolean | null;
+  featuredOrder?: number | null;
   privateNotes?: string | null;
   sources?:
     | {
@@ -956,6 +968,29 @@ export interface PublicationState {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "owner-state".
+ */
+export interface OwnerState {
+  id: number;
+  key: string;
+  kind: 'schedule' | 'preview' | 'worker';
+  status:
+    'pending' | 'completed' | 'conflict' | 'failed' | 'cancelled' | 'ready';
+  runAt: string;
+  value:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1037,6 +1072,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'publication-state';
         value: number | PublicationState;
+      } | null)
+    | ({
+        relationTo: 'owner-state';
+        value: number | OwnerState;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1143,6 +1182,7 @@ export interface SkillsSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1186,6 +1226,7 @@ export interface ExperiencesSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1241,6 +1282,7 @@ export interface EducationSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1288,6 +1330,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1345,6 +1388,7 @@ export interface PostsSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1389,6 +1433,7 @@ export interface ProfileSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1444,6 +1489,7 @@ export interface ProfessionalSectionsSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1515,6 +1561,7 @@ export interface AssociationsSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1557,6 +1604,7 @@ export interface ContextLinksSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1598,6 +1646,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   visible?: T;
   sortOrder?: T;
   featured?: T;
+  featuredOrder?: T;
   privateNotes?: T;
   sources?:
     | T
@@ -1666,6 +1715,19 @@ export interface PublicationStateSelect<T extends boolean = true> {
   singleton?: T;
   revision?: T;
   snapshot?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "owner-state_select".
+ */
+export interface OwnerStateSelect<T extends boolean = true> {
+  key?: T;
+  kind?: T;
+  status?: T;
+  runAt?: T;
+  value?: T;
   updatedAt?: T;
   createdAt?: T;
 }

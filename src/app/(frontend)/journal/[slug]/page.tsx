@@ -1,3 +1,6 @@
+import { ShareLinks } from '@/components/public/share-links';
+import { siteOrigin, publicOrigin } from '@/public-data/discovery';
+import { routeMetadata } from '@/public-data/discovery';
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -23,14 +26,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = recordBySlug(await getPublicSite(), 'posts', slug);
-  return post
-    ? {
-        title: post.title,
-        description: post.summary,
-        alternates: { canonical: `/journal/${encodeURIComponent(slug)}` },
-      }
-    : { title: 'Page not found' };
+  return routeMetadata(await getPublicSite(), '/journal/' + slug);
 }
 export default async function Article({
   params,
@@ -54,6 +50,7 @@ export default async function Article({
     <PublicPage
       site={site}
       pageId="article"
+      record={post}
       slots={{
         'article.hero': (
           <section
@@ -90,6 +87,10 @@ export default async function Article({
           >
             {post.body ? <RichText value={post.body} /> : <p>{post.summary}</p>}
             <Relations site={site} collection="posts" record={post} />
+            <ShareLinks
+              url={siteOrigin() + '/journal/' + post.slug}
+              publicURL={publicOrigin(siteOrigin())}
+            />
           </article>
         ),
         'article.related': related.length ? (

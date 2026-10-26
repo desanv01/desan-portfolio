@@ -2,6 +2,7 @@ import type { CollectionConfig, Field } from 'payload';
 import { APIError } from 'payload';
 import { isOwner, never, bootstrapCapability } from './access';
 import { ensureRecoveryAvailable } from './email';
+import { SafeValidationError } from './validation';
 
 const ownerAccess = {
   create: isOwner,
@@ -75,6 +76,13 @@ const common: Field[] = [
   { name: 'visible', type: 'checkbox', defaultValue: false },
   { name: 'sortOrder', type: 'number', defaultValue: 0 },
   { name: 'featured', type: 'checkbox', defaultValue: false },
+  {
+    name: 'featuredOrder',
+    type: 'number',
+    min: 0,
+    defaultValue: 0,
+    admin: { step: 1 },
+  },
   { name: 'privateNotes', type: 'textarea' },
   {
     name: 'sources',
@@ -124,15 +132,21 @@ function content(slug: string, fields: Field[]): CollectionConfig {
           }
           const effective = { ...originalDoc, ...data };
           if (effective.current && effective.end)
-            throw new Error('Current records cannot have an end date');
+            throw new SafeValidationError(
+              'Current records cannot have an end date. Clear End or uncheck Current.',
+              ['end', 'current'],
+            );
           if (
             effective.start &&
             effective.end &&
             reversed(effective.start, effective.end)
           )
-            throw new Error('End date precedes start date');
+            throw new SafeValidationError(
+              'End date precedes start date. Review Start and End.',
+              ['start', 'end'],
+            );
           const roleKeys = new Set<string>();
-          for (const patch of effective.roles || []) {
+          for (const [index, patch] of (effective.roles || []).entries()) {
             const previous = originalDoc?.roles?.find(
               (role: { id?: string; roleKey?: string }) =>
                 (patch.id && role.id === patch.id) ||
@@ -144,14 +158,21 @@ function content(slug: string, fields: Field[]): CollectionConfig {
               !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/.test(role.roleKey) ||
               roleKeys.has(role.roleKey)
             )
-              throw new Error(
+              throw new SafeValidationError(
                 'Role keys must be safe, stable and unique within their group',
+                [`roles.${index}.roleKey`],
               );
             roleKeys.add(role.roleKey);
             if (role.current && role.end)
-              throw new Error('Current roles cannot have an end date');
+              throw new SafeValidationError(
+                'Current roles cannot have an end date. Clear End or uncheck Current.',
+                [`roles.${index}.end`, `roles.${index}.current`],
+              );
             if (role.start && role.end && reversed(role.start, role.end))
-              throw new Error('Role end date precedes start date');
+              throw new SafeValidationError(
+                'Role end date precedes start date. Review the role dates.',
+                [`roles.${index}.start`, `roles.${index}.end`],
+              );
           }
           return data;
         },
@@ -167,6 +188,16 @@ export const owners: CollectionConfig = {
     maxLoginAttempts: 5,
     lockTime: 600000,
     useSessions: true,
+    forgotPassword: {
+      generateEmailHTML: ({ token } = {}) => {
+        const url = new URL(
+          '/owner/reset',
+          process.env.CMS_SERVER_URL || 'http://127.0.0.1:3000',
+        );
+        url.searchParams.set('token', token || '');
+        return `<p>A password reset was requested for the owner workspace.</p><p><a href="${url.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">Reset owner password</a></p><p>If you did not request this, ignore this message.</p>`;
+      },
+    },
   },
   admin: { useAsTitle: 'email' },
   access: {

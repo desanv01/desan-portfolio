@@ -1,6 +1,6 @@
+import { routeMetadata } from '@/public-data/discovery';
 import { getPublicSite } from '@/public-data/server';
 import { Library, type Query } from '@/components/public/library';
-export const metadata = { title: 'Work' };
 export default async function Work({
   searchParams,
 }: {
@@ -13,4 +13,8 @@ export default async function Work({
       query={await searchParams}
     />
   );
+}
+
+export async function generateMetadata() {
+  return routeMetadata(await getPublicSite(), '/work');
 }

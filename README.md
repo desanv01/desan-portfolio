@@ -10,7 +10,7 @@
 
 </div>
 
-This repository contains the engineering foundation, backend and public portfolio built with Next.js, Payload and PostgreSQL. Public pages render selected content and design revisions together. The custom owner Design Studio remains a later phase.
+This repository contains a portfolio and owner workspace built with Next.js, Payload and PostgreSQL. Public pages render selected content and design revisions together. The owner workspace edits content, media, arbitrary supported themes and layouts, with private preview, scheduling and recovery.
 
 ## Current scope
 
@@ -31,7 +31,7 @@ Acceptance belongs to an exact source revision and its observed checks. See the 
 
 Use Node.js **24.22.1** and npm **11.19.1**, as declared in [.nvmrc](.nvmrc) and [package.json](package.json). Run `npm ci`, then follow [backend setup](docs/engineering/backend.md) for private configuration, PostgreSQL, migrations and optional owner bootstrap.
 
-Run `npm run dev` and open [localhost:3000](http://localhost:3000). The server binds to loopback. `/admin` is configured Payload administration, not the final designed workspace. `/api/health` reports process liveness only. Stop with Ctrl+C.
+Run `npm run dev` and open [localhost:3000](http://localhost:3000). The server binds to loopback. `/owner` is the designed editing workspace; `/admin` retains native Payload administration. `/api/health` reports process liveness only. Stop with Ctrl+C. See [owner workflows](docs/engineering/OWNER-WORKSPACE.md) for local recovery and the separate scheduling process.
 
 Never put personal content into synthetic fixtures or publish environment files. Seeds contain explicitly synthetic drafts only.
 
@@ -45,6 +45,8 @@ npm run lint
 npm run typecheck
 npm test
 npm run db:migrate
+npm run test:content-import
+npm run test:owner
 npm run test:backend
 # Optional isolated evaluation data: set ALLOW_SYNTHETIC_PUBLICATION=1 first.
 npm run fixture:public
@@ -59,7 +61,7 @@ npm run test:public-preview
 
 CI uses isolated PostgreSQL, synthetic credentials and required job `quality`. It applies migrations twice, runs integration checks and verifies the standalone package before uploading it. The package guard rejects environment/runtime files and configured secret values.
 
-Successful runs link a Linux preview artifact with seven-day retention. It requires your own matching migrated database, private runtime configuration and media storage; database rows, credentials and uploads are excluded. It is not a hosted deployment. The internal `tmp/phase2-preview` folder name is retained from foundation packaging; current artifacts are named for Phase 4.
+Successful runs link a Linux preview artifact with seven-day retention. It requires your own matching migrated database, private runtime configuration and media storage; database rows, credentials and uploads are excluded. It is not a hosted deployment. The internal `tmp/phase2-preview` folder name is retained from foundation packaging; current artifacts are named for Phases 5–6.
 
 ## Project layout
 
@@ -76,7 +78,7 @@ Successful runs link a Linux preview artifact with seven-day retention. It requi
 | `.github/`          | CI, issue/PR conventions and ownership                         |
 | `docs/engineering/` | Setup, architecture, acceptance and ownership contracts        |
 
-One Payload identity system governs editing. Public data comes from selected publication snapshots; drafts are not automatically live. The public renderer consumes arbitrary validated palettes, licensed fonts, layouts, responsive/state settings and motion. The complete visual Design Studio UI, scheduling, approved personal content migration and deployment remain later work. See [architecture](docs/engineering/architecture.md) and [roadmap](docs/engineering/roadmap.md).
+One Payload identity system governs editing. Public data comes from selected publication snapshots; drafts are not automatically live. The visual Design Studio controls validated palettes, licensed fonts, layouts, responsive/state settings and motion. Reviewed content import is atomic and create-only. GitHub metadata is separately attributed and cached; discovery and sharing use selected public records. Analytics is off. Comprehensive application validation and production deployment remain later phases. See [content and discovery](docs/engineering/DISCOVERY-AND-CONTENT.md) and [roadmap](docs/engineering/roadmap.md).
 
 ## License and credits
 

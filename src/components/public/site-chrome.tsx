@@ -969,6 +969,7 @@ export function SiteFooter({ brand = 'Desan Vasu' }: { brand?: string }) {
           </Link>
         ))}
         <Link href="/search">Search</Link>
+        <a href="/feed.xml">RSS</a>
       </nav>
       <span className="footer-note">Considered. Built. Documented.</span>
     </footer>

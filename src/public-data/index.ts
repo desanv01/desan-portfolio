@@ -23,6 +23,7 @@ export type PublicRecord = {
   body?: unknown;
   sortOrder?: number;
   featured?: boolean;
+  featuredOrder?: number;
   publishedAt?: string;
   [key: string]: unknown;
 };
@@ -392,6 +393,19 @@ export function records(
 }
 const number = (value: unknown): number =>
   typeof value === 'number' && Number.isFinite(value) ? value : 0;
+/** Featured placement is independent from the complete library's order. */
+export function featuredRecords(
+  site: PublicSite,
+  collection: PublicCollection,
+): PublicRecord[] {
+  return records(site, collection)
+    .filter((record) => record.featured)
+    .sort(
+      (a, b) =>
+        number(a.featuredOrder ?? a.sortOrder) -
+        number(b.featuredOrder ?? b.sortOrder),
+    );
+}
 export function recordById(
   site: PublicSite,
   collection: PublicCollection,

@@ -1,3 +1,4 @@
+import { routeMetadata } from '@/public-data/discovery';
 import { getPublicSite } from '@/public-data/server';
 import { records, text } from '@/public-data';
 import { PublicPage } from '@/components/public/public-page';
@@ -7,7 +8,6 @@ import {
   EducationRecords,
   ExperienceRecords,
 } from '@/components/public/professional';
-export const metadata = { title: 'Resume' };
 export default async function Resume() {
   const site = await getPublicSite();
   const profile = records(site, 'profile')[0];
@@ -74,4 +74,8 @@ export default async function Resume() {
       }}
     />
   );
+}
+
+export async function generateMetadata() {
+  return routeMetadata(await getPublicSite(), '/resume');
 }

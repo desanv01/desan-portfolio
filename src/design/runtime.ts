@@ -30,6 +30,9 @@ export {
 } from './runtime-defaults';
 
 export type RuntimeOptions = {
+  /** Set exclusively by the authenticated owner preview provider. */
+  ownerPreview?: boolean;
+  previewStates?: { nodeId?: string; states: State[] };
   pageId?: string;
   themeId?: string;
   mode: 'light' | 'dark';
@@ -277,7 +280,12 @@ export function resolveDesignBinding(
   const ctx = context(data, options);
   const result = valuesAt(data, ctx, options);
   const warnings: string[] = [];
-  const resource = resourceResolver(data, options.resources ?? [], warnings);
+  const resource = resourceResolver(
+    data,
+    options.resources ?? [],
+    warnings,
+    options.ownerPreview,
+  );
   const source = result.sources['background.color'];
   const node = ctx.nodes.get(options.nodeId ?? '');
   const ownNames = [
@@ -391,8 +399,14 @@ function nodeSelector(
       : undefined;
   return `${root} ${record ? `:is(${regular},${record})` : regular}`;
 }
-function ruleText(selector: string, rule: CompiledRule): string {
-  const state = rule.states.map((x) => stateSelector[x]).join('');
+function ruleText(
+  selector: string,
+  rule: CompiledRule,
+  simulated = false,
+): string {
+  const state = simulated
+    ? ''
+    : rule.states.map((x) => stateSelector[x]).join('');
   const scoped = `:where(${selector}${state})`;
   let css = Object.keys(rule.declarations).length
     ? `${scoped}{${declarationsText(rule.declarations)}}`
@@ -408,7 +422,7 @@ function ruleText(selector: string, rule: CompiledRule): string {
     const focusParts = ['seek', 'field']
       .map(
         (part) =>
-          `:where(${selector}${otherStates} [data-design-part=${cssString(part)}]:focus-visible)`,
+          `:where(${selector}${simulated ? '' : otherStates} [data-design-part=${cssString(part)}]${simulated ? '' : ':focus-visible'})`,
       )
       .join(',');
     css += `${focusParts}{${declarationsText(rule.declarations)}}`;
@@ -421,7 +435,8 @@ function ruleText(selector: string, rule: CompiledRule): string {
     css += `${target}{${declarationsText(declarations)}}`;
   }
   // Avoid sticky emulated touch hover: require an actual hover-capable pointer.
-  if (rule.states.includes('hover')) css = `@media (hover:hover){${css}}`;
+  if (rule.states.includes('hover') && !simulated)
+    css = `@media (hover:hover){${css}}`;
   return rule.minWidth > 0
     ? `@media (min-width:${rule.minWidth}px){${css}}`
     : css;
@@ -433,6 +448,8 @@ export function compileDesignStyles(
 ): CompiledDesign {
   const data = assertValidDesign(input);
   const ctx = context(data, options);
+  if (options.previewStates?.states.some((state) => !STATES.includes(state)))
+    throw new Error('Invalid preview state');
   const scopeId =
     options.scopeId ??
     `${data.id}.${options.pageId ?? 'site'}.${ctx.theme.id}.${options.mode}`;
@@ -440,7 +457,12 @@ export function compileDesignStyles(
     throw new Error('Unsafe design scope identifier');
   const root = `[data-design-root=${cssString(scopeId)}]`;
   const warnings: string[] = [];
-  const resource = resourceResolver(data, options.resources ?? [], warnings);
+  const resource = resourceResolver(
+    data,
+    options.resources ?? [],
+    warnings,
+    options.ownerPreview,
+  );
   const fontFaces = resource.fontFaces();
   const ids = new Set<string>();
   const walk = (id: string) => {
@@ -545,7 +567,20 @@ export function compileDesignStyles(
   }
   const initial = `:where(${root}){${declarationsText({ ...builtinVariables(), 'font-family': 'var(--design-font-body)', 'font-synthesis': 'none' })}}`;
   const cssRules = [...rules, ...focusRules]
-    .map((rule) => ruleText(nodeSelector(root, rule.nodeId, ctx.nodes), rule))
+    .map((rule) =>
+      ruleText(
+        nodeSelector(root, rule.nodeId, ctx.nodes),
+        rule,
+        !!options.ownerPreview &&
+          !!options.previewStates &&
+          (!options.previewStates.nodeId ||
+            rule.nodeId === options.previewStates.nodeId) &&
+          rule.states.length > 0 &&
+          rule.states.every((state) =>
+            options.previewStates!.states.includes(state),
+          ),
+      ),
+    )
     .join('\n');
   const reduced = `@media (prefers-reduced-motion:reduce){:where(${root},${root} *){transition-duration:0s;transition-delay:0s;animation:none;scroll-behavior:auto;}}`;
   return {

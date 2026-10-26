@@ -50,6 +50,37 @@ const record = (id, slug, title, fields = {}) => ({
   visible: true,
   ...fields,
 });
+test('featured rank is independent from full library order, with a legacy fallback', () => {
+  const site = {
+    status: 'ready',
+    publication: {
+      content: {
+        skills: [
+          record(1, 'one', 'One', {
+            sortOrder: 1,
+            featured: true,
+            featuredOrder: 2,
+          }),
+          record(2, 'two', 'Two', {
+            sortOrder: 2,
+            featured: true,
+            featuredOrder: 0,
+          }),
+          record(3, 'three', 'Three', { sortOrder: 3, featured: false }),
+          record(4, 'four', 'Four', { sortOrder: 4, featured: true }),
+        ],
+      },
+    },
+  };
+  assert.deepEqual(
+    data.records(site, 'skills').map((row) => row.id),
+    [1, 2, 3, 4],
+  );
+  assert.deepEqual(
+    data.featuredRecords(site, 'skills').map((row) => row.id),
+    [2, 1, 4],
+  );
+});
 function publication() {
   return {
     revision: 'test-revision',
