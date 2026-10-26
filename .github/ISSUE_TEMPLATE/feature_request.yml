@@ -1,0 +1,21 @@
+name: Feature request
+description: Propose an improvement for review; a request does not authorize implementation.
+title: '[Proposal] '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem and proposed result
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Observable acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Phase, dependencies and alternatives
+      description: Later phases require separate authorization. Avoid private source links or personal data.
