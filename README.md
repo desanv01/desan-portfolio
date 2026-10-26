@@ -1,87 +1,48 @@
 <div align="center">
 
-# Desan Portfolio
+# Desan Vasu — Personal Website
 
-**A configurable portfolio and publishing workspace**
+**My projects, professional journey and ideas, in one place.**
+
+[Visit the website](https://desan-portfolio.vercel.app) · [Explore my work](https://desan-portfolio.vercel.app/work) · [View my profile](https://desan-portfolio.vercel.app/profile)
 
 [![CI](https://github.com/desanv01/desan-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/desanv01/desan-portfolio/actions/workflows/ci.yml)
 
-[Setup](docs/engineering/backend.md) · [Engineering docs](docs/engineering/README.md) · [Contributing](CONTRIBUTING.md) · [Roadmap](docs/engineering/roadmap.md)
-
 </div>
 
-This repository contains a portfolio and owner workspace built with Next.js, Payload and PostgreSQL. Public pages render selected content and design revisions together. The owner workspace edits content, media, arbitrary supported themes and layouts, with private preview, scheduling and recovery.
+This is the home of my personal website: a portfolio of the things I build, the experience behind them and the skills that connect them. It brings together my projects, work experience, education and writing, with a private workspace that lets me keep the site’s content and appearance up to date.
 
-## Current scope
+The first version is live at **[desan-portfolio.vercel.app](https://desan-portfolio.vercel.app)**.
 
-| Area        | Implementation boundary                                                                               |
-| ----------- | ----------------------------------------------------------------------------------------------------- |
-| Content     | Professional/project/skill records, typed relationships, drafts and versions                          |
-| Access      | Payload owner identity/session, closed signup, explicit local bootstrap and local recovery evaluation |
-| Media       | Guarded persistent images/fonts with immutable replacement identities; unsupported files rejected     |
-| Publication | Selected content/design revisions and assets in a coherent public snapshot                            |
-| Design data | Versioned arbitrary themes, typography, geometry, layouts, responsive/state and motion values         |
-| Validation  | Pinned toolchain, migration/integration tests, lint/types/build and preview verification              |
-| Product UI  | Responsive Home, Work/case studies, Profile, Journal/articles, Contact, Resume, Search and errors; configured Payload administration |
-| Deployment  | No production deployment or live site URL                                                             |
+## Explore the site
 
-Acceptance belongs to an exact source revision and its observed checks. See the [backend acceptance contract](docs/engineering/phase-3-acceptance.md) and [public renderer contract](docs/engineering/public-site.md).
+- **Home** — an introduction, selected projects and highlights from across the site.
+- **Work** — a searchable, filterable project collection with dedicated case studies, linked skills and GitHub repository information.
+- **Profile** — work experience, education and a skills library connected to the projects and professional records where those skills are used.
+- **Journal** — a space for articles, notes and future writing.
+- **Contact and search** — ways to find my public profiles and explore published content.
 
-## Local development
+## Design and experience
 
-Use Node.js **24.22.1** and npm **11.19.1**, as declared in [.nvmrc](.nvmrc) and [package.json](package.json). Run `npm ci`, then follow [backend setup](docs/engineering/backend.md) for private configuration, PostgreSQL, migrations and optional owner bootstrap.
+The starting design pairs copper/amber accents with expressive typography and light/dark appearance options. Responsive layouts, a percentage-based scroll indicator, section navigation and animated hover/focus states carry across the site. Keyboard navigation and reduced-motion preferences are supported.
 
-Run `npm run dev` and open [localhost:3000](http://localhost:3000). The server binds to loopback. `/owner` is the designed editing workspace; `/admin` retains native Payload administration. `/api/health` reports process liveness only. Stop with Ctrl+C. See [owner workflows](docs/engineering/OWNER-WORKSPACE.md) for local recovery and the separate scheduling process.
+The visual identity can evolve with the website. A private **Design Studio** lets me create themes and customize colors, fonts, sizing, spacing, layouts, page composition, responsive breakpoints and interaction states through visual controls. The starting palette is a choice, not a fixed set of presets.
 
-Never put personal content into synthetic fixtures or publish environment files. Seeds contain explicitly synthetic drafts only.
+## Behind the scenes
 
-## Validation and preview
+A private owner workspace manages content, media and site settings. Drafts and version history keep edits separate from the live site, while private previews let me review changes before publishing.
 
-With private local configuration and a dedicated test database:
+Publishing selects content and design versions together, with support for scheduled releases and restoring earlier publications. Images and fonts remain private until used in the published site. GitHub metadata is cached separately from my project descriptions, and published pages include social previews, a sitemap and an RSS feed.
 
-```sh
-npm run format:check
-npm run lint
-npm run typecheck
-npm test
-npm run db:migrate
-npm run test:content-import
-npm run test:owner
-npm run test:backend
-# Optional isolated evaluation data: set ALLOW_SYNTHETIC_PUBLICATION=1 first.
-npm run fixture:public
-npm run build
-npm run test:smoke
-npm run test:backend-routing
-npm run test:public
-node scripts/package-preview.mjs
-npm run test:preview
-npm run test:public-preview
-```
+## Built with
 
-CI uses isolated PostgreSQL, synthetic credentials and required job `quality`. It applies migrations twice, runs integration checks and verifies the standalone package before uploading it. The package guard rejects environment/runtime files and configured secret values.
+| Area               | Technology                                             |
+| ------------------ | ------------------------------------------------------ |
+| Website            | Next.js, React and TypeScript                          |
+| Content management | Payload CMS                                            |
+| Database           | PostgreSQL on Supabase                                 |
+| Media storage      | Private Supabase Storage                               |
+| Hosting            | Vercel                                                 |
+| Quality checks     | GitHub Actions, automated tests and browser validation |
 
-Successful runs link a Linux preview artifact with seven-day retention. It requires your own matching migrated database, private runtime configuration and media storage; database rows, credentials and uploads are excluded. It is not a hosted deployment. The internal `tmp/phase2-preview` folder name is retained from foundation packaging; current artifacts are named for Phases 5–6.
-
-## Project layout
-
-| Path                | Purpose                                                        |
-| ------------------- | -------------------------------------------------------------- |
-| `src/app/`          | Public pages, Payload routes and guarded publication/media APIs |
-| `src/cms/`          | Content/access/media/publication configuration and migrations  |
-| `src/design/`       | Validated design schema, inheritance and CSS/runtime compilation |
-| `src/public-data/`  | Published snapshot projection, search and typed relationship helpers |
-| `src/components/public/` | Public templates, configurable components and accessible interactions |
-| `tests/`            | Unit, integration, HTTP and package-safety checks              |
-| `scripts/`          | Backend CLI and preview packaging                              |
-| `compose.yaml`      | Isolated loopback PostgreSQL service                           |
-| `.github/`          | CI, issue/PR conventions and ownership                         |
-| `docs/engineering/` | Setup, architecture, acceptance and ownership contracts        |
-
-One Payload identity system governs editing. Public data comes from selected publication snapshots; drafts are not automatically live. The visual Design Studio controls validated palettes, licensed fonts, layouts, responsive/state settings and motion. Reviewed content import is atomic and create-only. GitHub metadata is separately attributed and cached; discovery and sharing use selected public records. Analytics is off. Comprehensive application validation and production deployment remain later phases. See [content and discovery](docs/engineering/DISCOVERY-AND-CONTENT.md) and [roadmap](docs/engineering/roadmap.md).
-
-## License and credits
-
-The repository license has not been selected. Public visibility implies no license grant. Dependencies retain their licenses; personal content/media rights are separate decisions.
-
-README organization was informed by [OmniForge](https://github.com/desanv01/omniforge) and [Flight Controller V2](https://github.com/desanv01/Flight-Controller-V2). Their licenses, assets, claims and implementation are not incorporated by that reference.
+This repository contains the website’s application source. Personal drafts, uploaded files, credentials and private backups are kept outside the public repository.
