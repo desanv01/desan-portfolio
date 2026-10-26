@@ -2,7 +2,8 @@ import { getPublicSite } from '@/public-data/server';
 import { PublicPage } from '@/components/public/public-page';
 import { Action, PageIntro } from '@/components/public/primitives';
 import { Suspense } from 'react';
-import Link from 'next/link';
+import Link from '@/components/public/public-link';
+import type { PublicSite } from '@/public-data';
 function MissingMessage() {
   return (
     <main className="content section">
@@ -14,10 +15,10 @@ function MissingMessage() {
     </main>
   );
 }
-async function DesignedMissing() {
+async function DesignedMissing({ site }: { site?: PublicSite }) {
   return (
     <PublicPage
-      site={await getPublicSite()}
+      site={site ?? (await getPublicSite())}
       pageId="not-found"
       slots={{
         'not-found.hero': (
@@ -41,10 +42,10 @@ async function DesignedMissing() {
     />
   );
 }
-export default function Missing() {
+export default function Missing({ site }: { site?: PublicSite } = {}) {
   return (
     <Suspense fallback={<MissingMessage />}>
-      <DesignedMissing />
+      <DesignedMissing site={site} />
     </Suspense>
   );
 }

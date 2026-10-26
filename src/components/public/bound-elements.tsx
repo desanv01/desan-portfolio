@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import Link, { useLinkStatus } from 'next/link';
+import { useLinkStatus } from 'next/link';
+import Link, { PublicAnchor } from './public-link';
 import { Children, useRef, type CSSProperties, type ReactNode } from 'react';
 import {
   mediaById,
@@ -105,10 +106,10 @@ export function BoundAction({
       typeof feedback.kind === 'string' ? feedback.kind : undefined,
   };
   return external ? (
-    <a href={safe} {...props}>
+    <PublicAnchor href={safe} {...props}>
       {children}
       <Arrow external />
-    </a>
+    </PublicAnchor>
   ) : (
     <Link href={safe} {...props}>
       <LinkContents node={node}>{children}</LinkContents>

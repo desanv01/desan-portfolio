@@ -12,6 +12,44 @@ import { createEmptyDesign } from '../src/design/model.ts';
 // The installed 16.4.3 utility retains its older Middleware export name.
 const { unstable_doesMiddlewareMatch: doesProxyMatch } = testing;
 
+test('indexing follows runtime configuration without changing route decisions', async () => {
+  const priorUrl = process.env.PUBLIC_SITE_URL;
+  const priorIndexing = process.env.PUBLIC_SITE_INDEXABLE;
+  try {
+    process.env.PUBLIC_SITE_URL = 'https://portfolio.example';
+    process.env.PUBLIC_SITE_INDEXABLE = '0';
+    assert.equal(
+      (await proxy(new NextRequest('https://portfolio.example/'))).headers.get(
+        'x-robots-tag',
+      ),
+      'noindex, nofollow',
+    );
+    process.env.PUBLIC_SITE_INDEXABLE = '1';
+    assert.equal(
+      (await proxy(new NextRequest('https://portfolio.example/'))).headers.get(
+        'x-robots-tag',
+      ),
+      null,
+    );
+    assert.equal(
+      (
+        await proxy(new NextRequest('https://portfolio.example/search'))
+      ).headers.get('x-robots-tag'),
+      'noindex, nofollow',
+    );
+    assert.equal(
+      (await proxy(new NextRequest('https://portfolio.example/not-found')))
+        .status,
+      404,
+    );
+  } finally {
+    if (priorUrl === undefined) delete process.env.PUBLIC_SITE_URL;
+    else process.env.PUBLIC_SITE_URL = priorUrl;
+    if (priorIndexing === undefined) delete process.env.PUBLIC_SITE_INDEXABLE;
+    else process.env.PUBLIC_SITE_INDEXABLE = priorIndexing;
+  }
+});
+
 const empty = { status: 'empty', publication: null };
 const unavailable = {
   status: 'unavailable',

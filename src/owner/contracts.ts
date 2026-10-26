@@ -33,6 +33,7 @@ export type OwnerVersion = {
   data: Record<string, unknown>;
 };
 export type Workspace = {
+  limits: { mediaBytes: number; requestBytes: number };
   collections: { slug: string; label: string; fields: FieldDescriptor[] }[];
   publication: {
     revision: string;
@@ -41,7 +42,13 @@ export type Workspace = {
     designTitle?: string;
     selections: (Selection & { recordId?: string | number; title?: string })[];
   } | null;
-  scheduler: { lastSeenAt: string | null; running: boolean };
+  scheduler: {
+    lastSeenAt: string | null;
+    running: boolean;
+    mode: 'managed' | 'local';
+    configured: boolean;
+    lastActualDelivery: string | null;
+  };
 };
 export type ScheduleStatus =
   'pending' | 'completed' | 'conflict' | 'failed' | 'cancelled';

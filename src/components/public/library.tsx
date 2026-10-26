@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from './public-link';
 import {
   filterRecords,
   paginate,

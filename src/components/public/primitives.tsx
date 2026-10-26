@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link, { PublicGetForm } from './public-link';
 import type { ReactNode } from 'react';
 import {
   relationshipId,
@@ -314,7 +314,12 @@ export function SearchForm({
   label?: string;
 }) {
   return (
-    <form action={action} method="get" className="search-form" role="search">
+    <PublicGetForm
+      action={action}
+      method="get"
+      className="search-form"
+      role="search"
+    >
       <BoundField
         node={`${page}.input`}
         label={label}
@@ -336,6 +341,6 @@ export function SearchForm({
       >
         Search <Arrow />
       </button>
-    </form>
+    </PublicGetForm>
   );
 }

@@ -13,6 +13,7 @@ import { localRecoveryEmail } from './email';
 import { designCollection } from '../design/collection';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import { ownerState } from './owner-state';
+import { cmsOrigin, postgresPoolOptions } from './runtime-policy';
 
 if (!process.env.PAYLOAD_SECRET || process.env.PAYLOAD_SECRET.length < 32)
   throw new Error('PAYLOAD_SECRET must be at least 32 characters');
@@ -20,13 +21,13 @@ if (!process.env.DATABASE_URI) throw new Error('DATABASE_URI is required');
 
 export default buildConfig({
   secret: process.env.PAYLOAD_SECRET,
-  serverURL: process.env.CMS_SERVER_URL || 'http://127.0.0.1:3000',
+  serverURL: cmsOrigin(),
   admin: {
     user: 'owners',
     importMap: { baseDir: resolve(/*turbopackIgnore: true*/ '.') },
   },
   db: postgresAdapter({
-    pool: { connectionString: process.env.DATABASE_URI },
+    pool: postgresPoolOptions(),
     push: false,
     migrationDir: resolve('src/cms/migrations'),
   }),

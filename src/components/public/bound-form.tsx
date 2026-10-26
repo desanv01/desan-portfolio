@@ -12,6 +12,7 @@ import {
 } from 'react';
 import { useDesignBinding } from './design-context';
 import { safeHref } from '@/public-data';
+import { usePreviewHref } from '../owner/preview-navigation';
 import type { Json } from '@/design/schema';
 
 const object = (v: Json | undefined) =>
@@ -29,6 +30,7 @@ export function BoundFilterBar({
   label?: string;
   options?: { href: string; label: string; selected?: boolean }[];
 }) {
+  const navigateHref = usePreviewHref();
   const binding = useDesignBinding(node);
   const presentation = binding?.behavior['filter.presentation'];
   if (binding?.attributes.hidden) return null;
@@ -71,7 +73,7 @@ export function BoundFilterBar({
             const href = options.find(
               (x) => x.href === event.target.value,
             )?.href;
-            if (href) window.location.assign(href);
+            if (href) window.location.assign(navigateHref(href));
           }}
         >
           {options.map((option) => (

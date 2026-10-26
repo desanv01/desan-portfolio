@@ -16,7 +16,7 @@
     "format:check": "prettier --check package.json package-lock.json tsconfig.json next.config.ts eslint.config.mjs .prettierrc.json src tests scripts",
     "lint": "eslint src tests scripts next.config.ts --max-warnings 0",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "node --import tsx --test tests/health.test.mjs tests/design*.mjs tests/public-data.test.mjs tests/public-data-proxy.test.mjs tests/public-rendering.test.mjs tests/preview-safety.test.mjs tests/owner-design-*.test.mjs tests/owner-backend-*.test.mjs tests/content-import.test.mjs tests/discovery.test.mjs tests/integration-github-cache.test.mjs",
+    "test": "node --import tsx --test tests/health.test.mjs tests/design*.mjs tests/public-data.test.mjs tests/public-data-proxy.test.mjs tests/public-rendering.test.mjs tests/preview-safety.test.mjs tests/owner-design-*.test.mjs tests/owner-backend-*.test.mjs tests/content-import.test.mjs tests/discovery.test.mjs tests/integration-github-cache.test.mjs tests/phase8-*.test.mjs tests/preview-navigation.test.mjs tests/preview-diagnostics.test.mjs tests/preview-not-found.test.mjs",
     "test:smoke": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --test tests/smoke.test.mjs",
     "test:preview": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --test tests/preview.test.mjs",
     "db:migrate": "node --env-file-if-exists=.env.local --env-file-if-exists=tmp/phase3-runtime.env --import tsx scripts/backend-cli.ts migrate",

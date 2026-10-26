@@ -116,7 +116,18 @@ export const restoreDesign = (
   );
 export const readMedia = () =>
   allPages<MediaRecord>('/api/owner/records/media');
-export const uploadMedia = (file: File, metadata: Record<string, unknown>) => {
+export const uploadMedia = async (
+  file: File,
+  metadata: Record<string, unknown>,
+) => {
+  const { limits } = await ownerFetch<{ limits: { mediaBytes: number } }>(
+    '/api/owner/workspace',
+  );
+  if (file.size > limits.mediaBytes) {
+    throw new Error(
+      `Choose a file no larger than ${limits.mediaBytes / (1024 * 1024)} MiB.`,
+    );
+  }
   const body = new FormData();
   body.append('file', file);
   body.append('_payload', JSON.stringify(metadata));

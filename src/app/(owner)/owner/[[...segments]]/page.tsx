@@ -23,6 +23,7 @@ export default async function OwnerPage({
       <OwnerAuth
         mode={segments[0] as 'login' | 'recovery' | 'reset'}
         token={typeof query.token === 'string' ? query.token : ''}
+        recoveryDeliveryAvailable={process.env.LOCAL_RECOVERY_SPOOL === '1'}
       />
     );
   }

@@ -1,10 +1,19 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ownerApi, type OwnerRecordPage } from './client';
+import {
+  ownerApi,
+  type OwnerRecordPage,
+  type OwnerWorkspaceData,
+} from './client';
 import { OwnerHeading } from './owner-shell';
 
-export function MediaLibrary() {
+export function MediaLibrary({
+  limits,
+}: {
+  limits: OwnerWorkspaceData['limits'];
+}) {
+  const maximumMiB = limits.mediaBytes / (1024 * 1024);
   const [result, setResult] = useState<OwnerRecordPage | null>(null),
     [page, setPage] = useState(1),
     [refresh, setRefresh] = useState(0),
@@ -38,6 +47,10 @@ export function MediaLibrary() {
           onSubmit={async (event) => {
             event.preventDefault();
             if (!file) return;
+            if (file.size > limits.mediaBytes) {
+              setError(`Choose a file no larger than ${maximumMiB} MiB.`);
+              return;
+            }
             const form = event.currentTarget;
             const fields = new FormData(form);
             const metadata = {
@@ -73,7 +86,7 @@ export function MediaLibrary() {
           <div className="owner-fields">
             <label className="owner-field owner-field-wide">
               <span className="owner-label">
-                PNG, JPEG, WebP or WOFF2 · up to 10 MiB
+                PNG, JPEG, WebP or WOFF2 · up to {maximumMiB} MiB
               </span>
               <input
                 type="file"

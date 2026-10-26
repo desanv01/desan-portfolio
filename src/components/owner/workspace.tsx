@@ -270,7 +270,7 @@ export function OwnerWorkspace({
       ) : segments[0] === 'design' ? (
         <DesignHost workspace={workspace} />
       ) : segments[0] === 'media' ? (
-        <MediaLibrary />
+        <MediaLibrary limits={workspace.limits} />
       ) : segments[0] === 'publishing' ? (
         <Publishing workspace={workspace} onRefresh={refresh} />
       ) : segments[0] === 'content' && collection ? (

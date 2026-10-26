@@ -1135,7 +1135,9 @@ export function DesignStudio({ initial, previewRoutes }: DesignStudioProps) {
                   <input
                     type="file"
                     accept={
-                      panel === 'fonts' ? '.woff2' : 'image/*,video/*,audio/*'
+                      panel === 'fonts'
+                        ? '.woff2'
+                        : 'image/png,image/jpeg,image/webp'
                     }
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
                   />

@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": [
+    "../src/components/owner/preview-navigation*.ts*",
+    "../src/components/public/*.tsx"
+  ],
+  "exclude": ["node_modules"]
+}

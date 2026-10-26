@@ -1,5 +1,4 @@
-import { readFile } from 'node:fs/promises';
-import { basename, resolve } from 'node:path';
+import { basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import {
   createLocalReq,
@@ -10,7 +9,11 @@ import {
 import config from '../cms/config';
 import { SafeValidationError } from '../cms/validation';
 import { uploadMIME } from '../cms/media';
+import { readStoredMedia, mediaLimitBytes } from '../cms/media-storage';
+import { cmsOrigin } from '../cms/runtime-policy';
+import { ownerJSON, ownerFormData, RequestBodyError } from './request-body';
 import { skillMerge, type SkillMergeInput } from './skill-merge';
+import { recoveryStream } from './recovery-stream';
 import { ownerRequest, requireOwner } from '../cms/access';
 import {
   changeSchedule,
@@ -42,17 +45,7 @@ function json(value: unknown, status = 200) {
   return Response.json(value, { status, headers });
 }
 async function body(request: Request): Promise<Record<string, unknown>> {
-  const raw = await request.text();
-  if (raw.length > 3 * 1024 * 1024)
-    throw new OwnerError('Request exceeds the editing limit', 413, 'invalid');
-  try {
-    const value = JSON.parse(raw);
-    if (!value || typeof value !== 'object' || Array.isArray(value))
-      throw new Error();
-    return value;
-  } catch {
-    throw new OwnerError('A JSON object is required', 400, 'invalid');
-  }
+  return ownerJSON(request);
 }
 function integer(value: string | null, fallback: number) {
   const parsed = Number(value);
@@ -82,10 +75,7 @@ export async function ownerMedia(
   });
   if (!media.filename || basename(media.filename) !== media.filename)
     throw new OwnerError('Media not found', 404, 'not-found');
-  const data = await readFile(
-    /*turbopackIgnore: true*/
-    resolve(process.env.MEDIA_DIRECTORY || 'tmp/phase3-media', media.filename),
-  );
+  const data = await readStoredMedia(media.filename);
   if (createHash('sha256').update(data).digest('hex') !== media.sha256)
     throw new OwnerError('Media integrity check failed', 409, 'invalid');
   return new Response(new Uint8Array(data), {
@@ -107,9 +97,7 @@ export async function ownerHTTP(
     if (!['GET', 'POST', 'PATCH'].includes(method))
       return json({ error: 'Method not allowed', code: 'method' }, 405);
     if (method !== 'GET') {
-      const origin = new URL(
-        process.env.CMS_SERVER_URL || 'http://127.0.0.1:3000',
-      ).origin;
+      const origin = cmsOrigin();
       if (request.headers.get('origin') !== origin)
         return json({ error: 'Origin denied', code: 'origin' }, 403);
     }
@@ -235,15 +223,15 @@ export async function ownerHTTP(
     if (area === 'media' && segments.length === 2 && method === 'GET')
       return await ownerMedia(payload, req, collection);
     if (area === 'media' && segments.length === 1 && method === 'POST') {
-      const form = await request.formData();
+      const form = await ownerFormData(request);
       const file = form.get('file');
       if (
         !(file instanceof File) ||
         file.size < 1 ||
-        file.size > 10 * 1024 * 1024
+        file.size > mediaLimitBytes()
       )
         throw new OwnerError(
-          'Upload must contain 1 byte to 10 MiB',
+          `Upload must contain 1 byte to ${mediaLimitBytes() / 1024 / 1024} MiB`,
           400,
           'invalid',
         );
@@ -346,15 +334,19 @@ export async function ownerHTTP(
           String((await body(request)).expectedRevision || ''),
         ),
       );
-    if (area === 'export' && segments.length === 1 && method === 'GET')
-      return new Response(JSON.stringify(await recoveryExport(payload, req)), {
+    if (area === 'export' && segments.length === 1 && method === 'GET') {
+      const archive = recoveryStream(await recoveryExport(payload, req));
+      return new Response(archive.stream, {
         headers: {
           ...headers,
           'Content-Type': 'application/json',
+          'X-Archive-SHA256': archive.sha256,
+          'X-Archive-Bytes': String(archive.bytes),
           'Content-Disposition':
             'attachment; filename="desan-owner-recovery.json"',
         },
       });
+    }
     if (area === 'import' && segments.length === 1 && method === 'POST') {
       const input = await body(request);
       return json(
@@ -369,6 +361,8 @@ export async function ownerHTTP(
     }
     return json({ error: 'Owner endpoint not found', code: 'not-found' }, 404);
   } catch (error) {
+    if (error instanceof RequestBodyError)
+      return json({ error: error.message, code: 'invalid' }, error.status);
     if (error instanceof SafeValidationError)
       return json(
         { error: error.message, code: 'invalid', fields: error.fields },

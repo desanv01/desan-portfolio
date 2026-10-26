@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from '@/components/public/public-link';
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
     <main className="content section">

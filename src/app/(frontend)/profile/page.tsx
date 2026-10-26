@@ -1,5 +1,5 @@
 import { routeMetadata } from '@/public-data/discovery';
-import Link from 'next/link';
+import Link from '@/components/public/public-link';
 import { getPublicSite } from '@/public-data/server';
 import {
   filterRecords,
