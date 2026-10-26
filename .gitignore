@@ -18,6 +18,7 @@
 !/.npmrc
 !/.env.example
 !/playwright.config.*
+!/compose.yaml
 !/src/
 !/tests/
 !/scripts/
