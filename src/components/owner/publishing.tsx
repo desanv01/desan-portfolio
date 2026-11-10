@@ -124,7 +124,8 @@ export function Publishing({
       lastActualDelivery: string | null;
     } | null>(null),
     [refresh, setRefresh] = useState(0),
-    [query, setQuery] = useState('');
+    [query, setQuery] = useState(''),
+    [openRecords, setOpenRecords] = useState<Record<string, boolean>>({});
   const input: PublicationInput = {
     expectedRevision: expected,
     designVersionId: designVersion,
@@ -322,6 +323,14 @@ export function Publishing({
                   <details
                     className="owner-rich-block"
                     key={`${choice.collection}:${choice.record.id}`}
+                    onToggle={(event) => {
+                      const key = `${choice.collection}:${choice.record.id}`;
+                      const open = event.currentTarget.open;
+                      setOpenRecords((records) => ({
+                        ...records,
+                        [key]: open,
+                      }));
+                    }}
                   >
                     <summary>
                       <span className="owner-badge">
@@ -353,19 +362,22 @@ export function Publishing({
                         Edit draft ↗
                       </Link>
                     </div>
-                    {current && (
-                      <label className="owner-field">
-                        <span className="owner-label">
-                          Selected saved version
-                        </span>
-                        <VersionPicker
-                          collection={choice.collection}
-                          record={choice.record}
-                          value={current.versionId}
-                          onChange={(value) => select(choice, value)}
-                        />
-                      </label>
-                    )}
+                    {current &&
+                      openRecords[
+                        `${choice.collection}:${choice.record.id}`
+                      ] && (
+                        <label className="owner-field">
+                          <span className="owner-label">
+                            Selected saved version
+                          </span>
+                          <VersionPicker
+                            collection={choice.collection}
+                            record={choice.record}
+                            value={current.versionId}
+                            onChange={(value) => select(choice, value)}
+                          />
+                        </label>
+                      )}
                     <p className="owner-muted">
                       Latest draft:{' '}
                       {choice.record.data.visible ? 'eligible' : 'hidden'}.

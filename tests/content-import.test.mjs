@@ -50,13 +50,13 @@ test('archive draft extraction preserves complete docs but excludes history and 
 });
 test('association endpoints remain typed when IDs coincide and prefill both sides', () => {
   assert.deepEqual(associationDefaults('associations', 'skills:5'), {
-    skill: '5',
+    skill: 5,
   });
   assert.deepEqual(associationDefaults('context-links', 'projects:5'), {
-    project: '5',
+    project: 5,
   });
   assert.deepEqual(associationDefaults('associations', 'experiences:5'), {
-    target: { relationTo: 'experiences', value: '5' },
+    target: { relationTo: 'experiences', value: 5 },
   });
   assert.equal(
     matchesContext(

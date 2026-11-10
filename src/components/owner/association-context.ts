@@ -13,9 +13,9 @@ export function associationDefaults(
   if (!context || !['associations', 'context-links'].includes(collection))
     return {};
   if (collection === 'associations' && context.collection === 'skills')
-    return { skill: context.id };
+    return { skill: Number(context.id) };
   if (collection === 'context-links' && context.collection === 'projects')
-    return { project: context.id };
+    return { project: Number(context.id) };
   if (
     context.collection !== 'skills' &&
     !(
@@ -23,7 +23,9 @@ export function associationDefaults(
       context.collection === 'professional-sections'
     )
   )
-    return { target: { relationTo: context.collection, value: context.id } };
+    return {
+      target: { relationTo: context.collection, value: Number(context.id) },
+    };
   return {};
 }
 export function matchesContext(
@@ -45,7 +47,7 @@ export function matchesContext(
       const target = value as { relationTo: string; value: string };
       return (
         actual?.relationTo === target.relationTo &&
-        id(actual.value) === target.value
+        id(actual.value) === String(target.value)
       );
     }
     return id(data[key]) === id(value);
