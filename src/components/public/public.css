@@ -1120,14 +1120,20 @@
       background: var(--background);
       border-bottom: 1px solid var(--border);
       z-index: 50;
+      max-height: calc(100vh - var(--header-height));
+      max-height: calc(100dvh - var(--header-height));
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
     .main-nav.is-open {
       display: flex;
       flex-direction: column;
       padding: 10px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
     }
     .main-nav .nav-link {
       min-height: 48px;
+      flex-shrink: 0;
       padding: 0 14px;
     }
     .mobile-search {
@@ -1148,7 +1154,7 @@
       z-index: 30;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 20px;
+      padding: 0 20px;
       border-bottom: 1px solid var(--border);
       background: var(--background);
       font-size: 12px;
@@ -1156,6 +1162,7 @@
     }
     .mobile-progress button {
       padding: 3px 0 3px 15px;
+      min-height: 44px;
     }
     .mobile-progress nav {
       position: absolute;
@@ -1168,9 +1175,15 @@
       padding: 14px;
       border-bottom: 1px solid var(--border);
       background: var(--background);
+      max-height: calc(100dvh - var(--header-height) - 45px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
     .mobile-progress nav a {
       padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      min-height: 44px;
     }
     .content,
     .reading-content {
@@ -1221,6 +1234,19 @@
     }
     .page-intro h1 {
       font-size: clamp(48px, 12vw, 90px);
+    }
+    .page-intro h1[data-design-node='case-study.title'] {
+      font-size: clamp(28px, 7.7vw, 52px);
+      line-height: 1.15;
+      text-wrap: pretty;
+    }
+    .page-intro.left:has([data-design-node='case-study.title']) {
+      padding-top: 28px;
+    }
+    .page-intro h1:has(.contact-title) {
+      font-size: clamp(32px, 8vw, 52px);
+      line-height: 1.15;
+      text-wrap: balance;
     }
     .page-intro .lede {
       font-size: 26px;
@@ -1300,8 +1326,28 @@
     }
     .site-footer nav {
       margin-left: 0;
-      gap: 18px;
+      gap: 8px 18px;
       width: 100%;
+    }
+    .pagination a,
+    .site-footer nav a,
+    .footer-brand,
+    .tag,
+    .section-heading .text-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+    }
+    .pagination a {
+      min-width: 44px;
+    }
+    .tag {
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+    .record-disclosure summary {
+      min-height: 44px;
+      padding-block: 10px;
     }
   }
   @media (max-width: 520px) {
@@ -1315,7 +1361,7 @@
       padding: 16px;
     }
     .project-card h3 {
-      font-size: 26px;
+      font-size: clamp(22px, 6.2vw, 26px);
     }
     .filter {
       padding: 10px 14px;
