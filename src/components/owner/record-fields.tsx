@@ -127,9 +127,9 @@ function Relationships({
       : polymorphic
         ? {
             relationTo: item.split(':')[0],
-            value: item.slice(item.indexOf(':') + 1),
+            value: Number(item.slice(item.indexOf(':') + 1)),
           }
-        : item;
+        : Number(item);
   const selected = field.hasMany
     ? (Array.isArray(value) ? value : []).map(encode)
     : encode(value);
